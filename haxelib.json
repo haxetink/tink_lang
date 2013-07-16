@@ -1,14 +1,14 @@
 {
-	"name": "tink_macro",
-	"url" : "http://haxetink.org/tink_macro",
+	"name": "tink_lang",
+	"url" : "http://haxetink.org/tink_lang",
 	"license": "MIT",
-	"tags": ["tink", "macro", "utility"],
-	"description": "The macro toolkit ;)",
-	"version": "0.0.0-alpha.2",
+	"tags": ["tink", "cross", "utility", "sugar"],
+	"description": "A syntactic sugar bowl",
+	"version": "0.0.0-alpha.1",
 	"releasenote": "Overall refactoring.",
 	"contributors": ["back2dos"],
 	"dependencies": {
-		"tink_core": "1.0.0-alpha.2"
+		"tink_macro": "0.0.0-alpha.2"
 	},
 	"classPath": "src" 
 }
