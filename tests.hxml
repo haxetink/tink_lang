@@ -1,4 +1,4 @@
--lib tink_core
+-lib tink_macro
 -cp src
 -cp tests
 -main Run
