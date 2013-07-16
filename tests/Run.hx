@@ -3,8 +3,10 @@ package ;
 import haxe.unit.TestCase;
 import haxe.unit.TestRunner;
 
-class Run {
+class Run implements tink.lang.Sugar {
 	static var tests:Array<TestCase> = [
+		new TestInit(),
+		new ClsTest()
 	];
 	static function main() {
 		var runner = new TestRunner();
