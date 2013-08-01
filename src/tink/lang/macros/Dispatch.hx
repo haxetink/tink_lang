@@ -2,9 +2,54 @@ package tink.lang.macros;
 
 import haxe.macro.Expr;
 
+import tink.macro.*;
 using tink.macro.Tools;
 
 class Dispatch {
+	static var types = [
+		':signal' => {
+			published: function (t) return macro : tink.core.Signal<$t>,
+			internal: function (pos, t) return macro @:pos(pos) new tink.core.Callback.CallbackList<$t>()
+		},
+		':future' => {
+			published: function (t) return macro : tink.core.Future<$t>,
+			internal: function (pos, t) return macro @:pos(pos) tink.core.Future.create()
+		}
+	];
+	static public function members(ctx:ClassBuilder) {
+		for (type in types.keys()) {
+			var make = types.get(type);
+			for (member in ctx) 	
+				switch (member.extractMeta(type)) {
+					case Success(tag):
+						switch (member.kind) {
+							case FVar(t, e):
+								if (t == null)
+									t = if (e == null) macro : tink.core.Signal.Noise;
+										else e.pos.makeBlankType();
+								member.publish();
+								if (e == null) {	
+									var own = '_' + member.name;
+									ctx.addMember( {
+										name: own,
+										kind: FVar(null, make.internal(tag.pos, t)),
+										pos: tag.pos
+									}, true).isPublic = false;	
+									e = 
+										if (type == ':signal')
+											macro @:pos(tag.pos) $i{own}.toSignal();
+										else
+											macro @:pos(tag.pos) $i{own}.asFuture();
+								}
+								//TODO: it's probably better to expose the signal through a getter
+								member.kind = FProp('default', 'null', make.published(t), e);
+							default:
+								member.pos.error('can only declare signals on variables');
+						}
+					default:
+				}
+		}
+	}	
 	static public function normalize(e:Expr)
 		return switch e {
 			case macro @until($a{args}) $handler:
@@ -18,7 +63,6 @@ class Dispatch {
 				case macro @when($a{args}) $handler:
 					if (args.length == 0)
 						e.reject('At least one signal/event/future expected');
-					//var ret = ECheckType([for (arg in args) 
 					var ret = [for (arg in args) 
 						switch arg {
 							case macro @capture $dispatcher[$event]
@@ -31,9 +75,8 @@ class Dispatch {
 									$DISPATCHER.promote($dispatcher).watch($event, ___h);
 							default:
 								macro @:pos(arg.pos) $arg.when(___h);
-								//macro @:pos(arg.pos) tink.core.types.Callback.target($arg)(___h);
+								//macro @:pos(arg.pos) tink.core.Callback.target($arg)(___h);
 						}
-					//].toArray(), macro : tink.core.types.Callback.CallbackLink).at();
 					].toArray();
 					macro (function (___h) return $ret)($handler);//TODO: SIAF only generated because otherwise inference order will cause compiler error
 				default: e;

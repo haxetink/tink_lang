@@ -6,7 +6,9 @@ import haxe.unit.TestRunner;
 class Run implements tink.lang.Sugar {
 	static var tests:Array<TestCase> = [
 		new TestInit(),
-		new ClsTest()
+		new ClsTest(),
+		new TestFutureDecl(),
+		new TestSignalDecl(),
 	];
 	static function main() {
 		var runner = new TestRunner();

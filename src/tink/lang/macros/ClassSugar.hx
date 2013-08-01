@@ -56,6 +56,7 @@ class ClassSugar {
 			// 	// tink.reactive.signals.macros.SignalBuilder.make,
 			// 	// tink.reactive.bindings.macros.BindableProperties.cache,
 			// // #end
+			Dispatch.members,
 			Init.process,
 			Forward.process,
 			PropBuilder.process,
