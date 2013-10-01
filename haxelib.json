@@ -4,11 +4,11 @@
 	"license": "MIT",
 	"tags": ["tink", "cross", "utility", "sugar"],
 	"description": "A syntactic sugar bowl",
-	"version": "0.0.0-alpha.1",
+	"version": "0.0.0-beta",
 	"releasenote": "Overall refactoring.",
 	"contributors": ["back2dos"],
 	"dependencies": {
-		"tink_macro": "0.0.0-alpha.2"
+		"tink_macro": "0.0.0-beta"
 	},
 	"classPath": "src" 
 }
