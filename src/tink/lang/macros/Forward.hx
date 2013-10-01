@@ -5,7 +5,7 @@ import haxe.macro.Expr;
 import haxe.macro.Type;
 import tink.macro.*;
 
-using tink.macro.Tools;
+using tink.MacroApi;
 using StringTools;
 using Lambda;
 
@@ -14,10 +14,9 @@ typedef ForwardRules = { call:Null<Expr>, get:Null<Expr>, set:Null<Expr> };
 
 class Forward {
 	static inline var TAG = ":forward";
-	static public function process(ctx:ClassBuilder) {
+	static public function process(ctx:ClassBuilder) 
 		new Forward(ctx).processMembers();
-	}
-	
+
 	var ctx:ClassBuilder;
 	function new(ctx) 
 		this.ctx = ctx;
@@ -149,7 +148,7 @@ class Forward {
 			
 		for (arg in args) {
 			callArgs.push(arg.name.resolve(target.pos));
-			methodArgs.push( { name : arg.name, opt : arg.opt, type : arg.t.toComplex(true), value : null } );
+			methodArgs.push( { name : arg.name, opt : arg.opt, type : arg.t.toComplex(), value : null } );
 		}
 		var methodParams = [].toBlock().func().params;//TODO: be less lazy
 		for (param in params) 

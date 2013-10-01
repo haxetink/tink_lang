@@ -3,7 +3,7 @@ package tink.lang.macros;
 import haxe.macro.Expr;
 import tink.macro.*;
 
-using tink.macro.Tools;
+using tink.MacroApi;
 
 class Init {
 	static public function process(ctx) 
@@ -16,7 +16,7 @@ class Init {
 	function getType(t:Null<ComplexType>, inferFrom:Expr) 
 		return
 			if (t == null) 
-				inferFrom.typeof().sure().toComplex(true);
+				inferFrom.typeof().sure().toComplex();
 			else 
 				t;
 
@@ -48,11 +48,14 @@ class Init {
 	static public function field(ctor:Constructor, name, t:ComplexType, e:Expr) {
 		var init = null,
 			def = null;
-		if (!e.isWildcard())
-			switch (e.expr) {
-				case EParenthesis(e): def = e;
-				default: init = e;
+		ctor.init(
+			name, 
+			e.pos,	
+			switch e {
+				case macro _: Arg(t);
+				case macro ($e): OptArg(e, t);
+				default: Value(e);
 			}
-		ctor.init(name, e.pos, init, def, t);							
+		);							
 	}
 }

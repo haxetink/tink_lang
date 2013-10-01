@@ -51,6 +51,7 @@ class ClsTest extends TestCase {
 			assertEquals(target.x, x);
 		}		
 	}
+	
 	function testPropertyBuild() {
 		var b = new Built();
 		assertEquals(0, b.a);
@@ -148,24 +149,36 @@ class ClsTest extends TestCase {
 				a;
 			}
 		);
+		
 		for (i in 0...50) {
 			floatUp(0, i, .1);
 			floatUp(0, 0.1 * i, .1);
+
 			var breakAt = (i >>> 1) + Std.random(i);
+			
 			floatUp(0, i, 1.0, function (i) return i >= breakAt);
 			intUp(0, i, 3);
 			intUp(0, 3 * i, 3);
+			
 			var breakAt = (i >>> 1) + Std.random(i);
+			
 			intUp(0, i, 1, function (i) return i >= breakAt);
 			floatDown(0, i, .1);
 			floatDown(0, 0.1 * i, .1);
+			
 			var breakAt = (i >>> 1) + Std.random(i);
+			
 			floatDown(0, i, 1.0, function (i) return i >= breakAt);
 			intDown(0, i, 3);
 			intDown(0, 3 * i, 3);
+			
 			var breakAt = (i >>> 1) + Std.random(i);
 			intDown(0, i, 1, function (i) return i >= breakAt);
 		}
+		
+		assertEquals('0:9,1:8,2:7,3:6,4:5,5:4,6:3,7:2,8:1,9:0', loop.complexComprehension(0, 10, 10, 0, 1).join(','));
+		assertEquals('0:9,1:8,2:7', loop.loopMap([0 => 9, 1 => 8, 2 => 7]).join(','));
+		
 	}
 	function testSuperConstructor() {
 		var c = new Child("1", 2);
@@ -190,6 +203,7 @@ class ClsTest extends TestCase {
 		assertEquals("1", c3.e);		
 	}
 }
+
 typedef FwdTarget = {
 	function add(a:Int, b:Int):Int;
 	function subtract(a:Int, b:Int):Int;
@@ -237,7 +251,7 @@ private class Base {
 	}
 }
 
-class Child extends Base implements Sugar {
+@:verboseb class Child extends Base implements Sugar {
 	public var b:Int = _;
 	public var c = (3);
 	public var d:Int = b;
@@ -247,6 +261,7 @@ class Child extends Base implements Sugar {
 class Child2 extends Child {
 
 }
+
 class ControlLooper {
 	public function new() { }
 	public function floatUp(start:Float, end:Float, step:Float, breaker) {
@@ -286,38 +301,39 @@ class ControlLooper {
 		return ret;
 	}	
 }
+
 class SuperLooper implements Sugar {
 	public function new() { }
-	public function floatUp(start:Float, end:Float, step:Float, breaker) {
-		var ret = [];
-		for (i += step in start...end) {
+	public function floatUp(start:Float, end:Float, step:Float, breaker) 
+		return [for (i += step in start...end) {
 			if (breaker(i)) break;
-			ret.push(i);
-		}
+			i;
+		}];
+	
+	public function floatDown(start:Float, end:Float, step:Float, breaker) 
+		return [for (i -= step in start...end) {
+			if (breaker(i)) break;
+			i;
+		}];
+	
+	public function intUp(start:Int, end:Int, step:Int, breaker) 
+		return [for (i += step in start...end) {
+			if (breaker(i)) break;
+			i;
+		}];
+
+	public function intDown(start:Int, end:Int, step:Int, breaker)
+		return [for (i -= step in start...end) {
+			if (breaker(i)) break;
+			i;
+		}];
+
+	public function complexComprehension(imin, imax, jmax, jmin, step)
+		return [for ([i in imin...imax, j -= step in jmax...jmin]) '$i:$j'];
+	
+	public function loopMap(m:Map<Int, Int>) {
+		var ret = [for (k => v in m) '$k:$v'];
+		ret.sort(Reflect.compare);
 		return ret;
 	}
-	public function floatDown(start:Float, end:Float, step:Float, breaker) {
-		var ret = [];
-		for (i -= step in start...end) {
-			if (breaker(i)) break;
-			ret.push(i);
-		}
-		return ret;		
-	}
-	public function intUp(start:Int, end:Int, step:Int, breaker) {
-		var ret = [];
-		for (i += step in start...end) {
-			if (breaker(i)) break;
-			ret.push(i);
-		}
-		return ret;
-	}
-	public function intDown(start:Int, end:Int, step:Int, breaker) {
-		var ret = [];
-		for (i -= step in start...end) {
-			if (breaker(i)) break;
-			ret.push(i);
-		}
-		return ret;		
-	}	
 }

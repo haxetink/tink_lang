@@ -3,7 +3,7 @@ package tink.lang.macros;
 import haxe.macro.Expr;
 import tink.macro.*;
 
-using tink.macro.Tools;
+using tink.MacroApi;
 
 class PropBuilder {
 	static public inline var FULL = ':prop';

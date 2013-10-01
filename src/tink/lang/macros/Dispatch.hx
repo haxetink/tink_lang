@@ -1,45 +1,48 @@
 package tink.lang.macros;
 
 import haxe.macro.Expr;
-
 import tink.macro.*;
-using tink.macro.Tools;
+import tink.core.*;
+using tink.MacroApi;
 
 class Dispatch {
+	static function make(type:String) {
+		var Type = type.charAt(0).toUpperCase() + type.substr(1);
+		function mk(s:String, t)
+			return s.asComplexType([TPType(t)]);
+		return new Pair(':$type', {
+			published: function (t) return mk('tink.core.$Type', t),
+			internal: function (t) return mk('tink.core.$Type.${Type}Trigger', t),
+			init: function (pos, t) return ENew('tink.core.$Type.${Type}Trigger'.asTypePath([TPType(t)]), []).at(pos),
+			publish: function (e:Expr) return e.field('as$Type', e.pos).call(e.pos)
+		});
+	}
 	static var types = [
-		':signal' => {
-			published: function (t) return macro : tink.core.Signal<$t>,
-			internal: function (pos, t) return macro @:pos(pos) new tink.core.Callback.CallbackList<$t>()
-		},
-		':future' => {
-			published: function (t) return macro : tink.core.Future<$t>,
-			internal: function (pos, t) return macro @:pos(pos) tink.core.Future.create()
-		}
+		make('signal'),
+		make('future')
 	];
 	static public function members(ctx:ClassBuilder) {
-		for (type in types.keys()) {
-			var make = types.get(type);
+		for (type in types) {
+			var make = type.b;
 			for (member in ctx) 	
-				switch (member.extractMeta(type)) {
+				switch (member.extractMeta(type.a)) {
 					case Success(tag):
 						switch (member.kind) {
 							case FVar(t, e):
 								if (t == null)
-									t = if (e == null) macro : tink.core.Signal.Noise;
-										else e.pos.makeBlankType();
+									t = if (e == null) 
+											macro : tink.core.Signal.Noise;
+										else 
+											e.pos.makeBlankType();
 								member.publish();
 								if (e == null) {	
 									var own = '_' + member.name;
 									ctx.addMember( {
 										name: own,
-										kind: FVar(null, make.internal(tag.pos, t)),
+										kind: FVar(make.internal(t), make.init(tag.pos, t)),
 										pos: tag.pos
 									}, true).isPublic = false;	
-									e = 
-										if (type == ':signal')
-											macro @:pos(tag.pos) $i{own}.toSignal();
-										else
-											macro @:pos(tag.pos) $i{own}.asFuture();
+									e = make.publish(own.resolve(tag.pos));
 								}
 								//TODO: it's probably better to expose the signal through a getter
 								member.kind = FProp('default', 'null', make.published(t), e);

@@ -1,7 +1,7 @@
 package tink.lang.macros;
 
 import haxe.macro.Expr;
-using tink.macro.Tools;
+using tink.MacroApi;
 
 class ShortLambda {
 	static public function postfix(e:Expr) 
@@ -11,12 +11,26 @@ class ShortLambda {
 					macro @:pos(e.pos) $callee($a{args.concat([callback])});
 				default: e;	
 			}
-			
+	
+	static public function protectMaps(e:Expr)
+		return
+			switch e {
+				case macro [$a{args}] if (args.length > 0 && switch args[0] { case macro $k => $v: true; default: false; }):
+					[for (a in args)
+						switch a {
+							case macro $k => $v:
+								macro ($k) => $v;
+							default: a;
+						}
+					].toArray();
+				default: e;
+			}
+	
 	static public function process(e:Expr) 
 		return
 			switch e {
 				case { expr: EMeta({ name: tag, params: [], pos: mpos }, { expr:ESwitch(macro _, cases, edef), pos:pos }) } if (tag == 'do' || tag == 'f'):
-					var tmp = String.tempName();
+					var tmp = MacroApi.tempName();
 					process(EMeta( 
 						{ name: tag, params: [tmp.resolve()], pos: mpos },
 						ESwitch(tmp.resolve(), cases, edef).at(pos)

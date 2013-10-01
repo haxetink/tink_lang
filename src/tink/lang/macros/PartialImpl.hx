@@ -4,7 +4,7 @@ import tink.macro.*;
 import haxe.macro.Type;
 import haxe.macro.Expr;
 
-using tink.macro.Tools;
+using tink.MacroApi;
 
 class PartialImpl {
 	static function getDefault(f:ClassField) {
@@ -49,7 +49,7 @@ class PartialImpl {
 					var index = 0,
 						paramMap = new Map();
 					for (p in i.t.get().params)
-						paramMap.set(p.name, i.params[index].toComplex(true));
+						paramMap.set(p.name, i.params[index].toComplex());
 					if (!ctx.hasMember(f.name)) {
 						switch (f.kind) {
 							case FVar(read, write):

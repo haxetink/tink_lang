@@ -2,7 +2,7 @@ package tink.lang.macros;
 
 import haxe.macro.Expr;
 
-using tink.macro.Tools;
+using tink.MacroApi;
 
 class Pipelining {
 	static public function shortBind(e:Expr):Expr {
@@ -68,7 +68,7 @@ class Pipelining {
 	
 	static function generate(d:Data, pos:Position) {
 		//TODO: this chould be worse. But it could be a lot better. As in readable.
-		var tmp = String.tempName();
+		var tmp = MacroApi.tempName();
 		
 		var normalized = d.handler.yield(function (e:Expr) return macro @:pos(e.pos) $OP.promote($e));
 		
@@ -76,12 +76,12 @@ class Pipelining {
 		d.handler = tmp.resolve(d.handler.pos);
 		
 		var dType = d.handler.pos.makeBlankType();
-		var chainerName = String.tempName('__chain');
+		var chainerName = MacroApi.tempName('__chain');
 		var chainer = chainerName.resolve(d.handler.pos);
 		
-		var yielderName = String.tempName('__yield');
+		var yielderName = MacroApi.tempName('__yield');
 		var yielder = yielderName.resolve(d.handler.pos);
-		var dissolverName = String.tempName('__dissolve');
+		var dissolverName = MacroApi.tempName('__dissolve');
 		
 		var collectors = d.collectors.copy();
 		

@@ -5,7 +5,7 @@ package tink.lang.macros;
 	import haxe.macro.Expr;
 	import tink.lang.macros.LoopSugar;
 	import tink.macro.ClassBuilder;
-	using tink.macro.Tools;
+	using tink.MacroApi;
 #end
 
 class ClassSugar {
@@ -48,12 +48,11 @@ class ClassSugar {
 								e.expr = rule(e).expr;//RAPTORS
 					}
 			}
-
+		
 		//TODO: it seems a little monolithic to yank all plugins here
 		static public var PLUGINS = [
-			simpleSugar(LoopSugar.fold),
-			// // #if (tink_reactive || !tink_core) 
-			// 	// tink.reactive.signals.macros.SignalBuilder.make,
+			// simpleSugar(LoopSugar.fold),
+			//  // #if (tink_reactive || !tink_core) 
 			// 	// tink.reactive.bindings.macros.BindableProperties.cache,
 			// // #end
 			Dispatch.members,
@@ -76,6 +75,7 @@ class ClassSugar {
 				default: e;				
 			}),
 			
+			simpleSugar(ShortLambda.protectMaps),
 			simpleSugar(ShortLambda.process),
 			simpleSugar(ShortLambda.postfix),
 			
@@ -83,15 +83,15 @@ class ClassSugar {
 			simpleSugar(Dispatch.with),
 			simpleSugar(Dispatch.on),
 			
-			// simpleSugar(function (e) return switch e { 
-			// 	case (macro $val || if ($x) $def else $none)
-			// 		,(macro $val | if ($x) $def else $none) if (none == null):
-			// 		macro @:pos(e.pos) {
-			// 			var ___val = $val;
-			// 			(___val == $x ? $def : ___val);
-			// 		}
-			// 	default: e;
-			// }),
+			simpleSugar(function (e) return switch e { 
+				case (macro $val || if ($x) $def else $none)
+					,(macro $val | if ($x) $def else $none) if (none == null):
+					macro @:pos(e.pos) {
+						var ___val = $val;
+						(___val == $x ? $def : ___val);
+					}
+				default: e;
+			}),
 			// // simpleSugar(tink.markup.formats.Fast.build),
 			// // simpleSugar(tink.markup.formats.Dom.build),
 			simpleSugar(Pipelining.transform, true),

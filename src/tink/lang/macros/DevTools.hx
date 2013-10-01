@@ -2,7 +2,7 @@ package tink.lang.macros;
 
 import haxe.macro.Expr;
 
-using tink.macro.Tools;
+using tink.MacroApi;
 
 class DevTools {
 	static public function explain(e:Expr)
@@ -28,7 +28,7 @@ class DevTools {
 			case macro @measure($a{args}) $value:			
 				var name = 
 					switch args.length {
-						case 0: e.pos.error('please supply a name for the benchmark');
+						case 0: e.toString().toExpr();
 						case 1: args[0];
 						default: args[1].reject('too many arguments');
 					}
@@ -44,7 +44,7 @@ class DevTools {
 						name = $name,
 						value = {
 							for (___i in 0...$count - 1) $value; 
-							[$value];//deals with Void
+							[($value)];//deals with Void
 						}
 					trace(name + ' took ' + Std.int(1000 * (haxe.Timer.stamp() - start)) + ' msecs');
 					value[0];
