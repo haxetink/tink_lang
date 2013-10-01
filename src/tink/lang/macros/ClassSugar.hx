@@ -74,7 +74,7 @@ class ClassSugar {
 					).at(e.pos);
 				default: e;				
 			}),
-			
+			simpleSugar(LoopSugar.comprehension),
 			simpleSugar(ShortLambda.protectMaps),
 			simpleSugar(ShortLambda.process),
 			simpleSugar(ShortLambda.postfix),
@@ -99,7 +99,6 @@ class ClassSugar {
 			simpleSugar(DevTools.measure),
 			simpleSugar(DevTools.explain),
 			PartialImpl.process,
-			simpleSugar(LoopSugar.comprehension),
 			simpleSugar(LoopSugar.transformLoop),
 		];	
 	#end

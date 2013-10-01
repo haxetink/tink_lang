@@ -384,12 +384,6 @@ class LoopSugar {
 		}
 	}
 	
-	static var COMPREHENSION = macro [for (EXPR__it) EXPR__expr];
-	static var COMPREHENSION_TO_CALL = macro EXPR__output(for (EXPR__it) EXPR__expr);
-	static var COMPREHENSION_INTO = macro [for (EXPR__it) EXPR__expr] => EXPR__output;	
-
-	static var FIELD = (macro EXPR__owner.NAME__field);
-
 	static public function comprehension(e:Expr) {
 		function loop(it, body)
 			return EFor(it, body).at(e.pos);
@@ -400,7 +394,8 @@ class LoopSugar {
 				case macro $key => $val:
 					found = true;
 					'$'.resolve(e.pos).call([key, val], e.pos);
-				case _: e;
+				case _: 
+					e;
 			});
 			return new tink.core.Pair(found, e);
 		}
@@ -451,11 +446,11 @@ class LoopSugar {
 		return 
 			switch e {
 				case macro [for ($it) $expr]:
-					var n = normalizePairLit(e);
+					var n = normalizePairLit(expr);
 					var output = 
 						if (n.a) (macro @:pos(e.pos) new Map().set);
 						else (macro @:pos(e.pos) [].push);
-					comprehension(output, it, expr);
+					comprehension(output, it, n.b);
 				case macro $output(for ($it) $expr):
 					comprehension(output, it, expr);
 				default: e;
