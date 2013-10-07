@@ -4,12 +4,13 @@ import tink.lang.Sugar;
 
 class TestFastLoops extends Base implements Sugar {
 	function testArray() {
-		var a = [for (i in 0...100) Std.string(i)],
-			count = 5000;
+		var a = [for (i in 0...10) Std.string(i)],
+			count = 50000;
 		var l = Lambda.list(a),
-			sm = @:diet [for (x in a) x => x],
-			im = @:diet [for (x in a) Std.parseInt(x) => x];
+			sm = [for (x in a) x => x],
+			im = [for (x in a) Std.parseInt(x) => x];
 		
+		#if benchmark
 		@measure('tink array' * (count * 20)) Tink.array(a);
 		@measure('haxe array' * (count * 20)) Haxe.array(a);
 		
@@ -27,10 +28,11 @@ class TestFastLoops extends Base implements Sugar {
 		
 		@measure('tink imapk' * count) Tink.imapk(im);
 		@measure('haxe imapk' * count) Haxe.imapk(im);
+		#end
 		
 		for ([x in a, i in 0...a.length])
 			assertEquals(Std.string(i), x);
-			
+		
 		for ([x in l, i in 0...l.length])
 			assertEquals(Std.string(i), x);
 	}
@@ -74,5 +76,4 @@ class Haxe {
 		
 	static public inline function imapk<A>(m:Map<Int, A>)
 		for (x in m.keys()) {}
-
 }
