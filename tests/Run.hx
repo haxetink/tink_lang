@@ -10,6 +10,7 @@ class Run {
 		new TestFutureDecl(),
 		new TestSignalDecl(),
 		new TestFastLoops(),
+		new TestOptions()
 	];
 	static function main() {
 		#if js //works for nodejs and browsers alike

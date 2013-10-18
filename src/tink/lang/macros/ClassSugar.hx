@@ -55,6 +55,7 @@ class ClassSugar {
 			//  // #if (tink_reactive || !tink_core) 
 			// 	// tink.reactive.bindings.macros.BindableProperties.cache,
 			// // #end
+			FuncOptions.process,
 			Dispatch.members,
 			Init.process,
 			Forward.process,
