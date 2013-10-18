@@ -55,7 +55,8 @@ class Init {
 				case macro _: Arg(t);
 				case macro ($e): OptArg(e, t);
 				default: Value(e);
-			}
+			},
+			{ bypass : true }
 		);							
 	}
 }
