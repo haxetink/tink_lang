@@ -138,6 +138,30 @@ class FastLoops {
 				}
 			);
 		}
+		
+		if (Context.defined('js')) {
+			for (h in 'haxe.ds.IntMap,haxe.ds.StringMap'.split(','))
+				addRules(h, 
+					macro: {
+						// @:tink_for({ 
+						// 	var i = 0, a = , l;
+						// 	{
+						// 		a = untyped __call__('array_values', this.h);
+						// 		l = untyped __call__('count', a);								
+						// 	}
+						// }, i < l, a[i++])
+						// function iterator();
+						@:tink_for({ 
+							var i = 0, a:Array<Dynamic> = untyped this.keys().arr, l;
+							l = a.length;
+						}, i < l, a[i++])
+						function keys();
+					}
+				);
+
+		}
+		
+		
 		addRules('List', 
 			macro : {
 				@:tink_for( { var h = this.h, x; }, h != null, { x = h[0]; h = h[1]; x; } ) function iterator();
@@ -156,12 +180,12 @@ class FastLoops {
 			switch (e.expr) {
 				case EVars(vars):
 					for (v in vars) 
+						// if (vars[0].name.resolve().typeof().isSuccess()) - requires to check vs loop var also
 						add(v.name);
 				default:
 			}
 		}
 		var init = [tVar.define(e)];
-		
 		for (e in f.init) 
 			init.push(e.finalize(vars, true).withPrivateAccess());
 		
