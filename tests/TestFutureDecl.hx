@@ -1,8 +1,8 @@
 package ;
 
-import tink.lang.Sugar;
+import tink.Lang;
 
-class TestFutureDecl extends Base implements Sugar {
+class TestFutureDecl extends Base implements Lang {
 	@:future var ten = tink.core.Future.sync(10);
 	@:future var some:Int;
 	function testConst() {

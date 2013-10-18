@@ -1,8 +1,8 @@
 package ;
 
-import tink.lang.Sugar;
+import tink.Lang;
 
-class TestSignalDecl extends Base implements Sugar {
+class TestSignalDecl extends Base implements Lang {
 	
 	@:signal var foo:Int;
 	@:signal var bar = this.foo.map([i] => 2 * i);

@@ -1,7 +1,7 @@
 package ;
 
 import haxe.ds.StringMap;
-import tink.lang.Sugar;
+import tink.Lang;
 using Lambda;
 
 class TestInit extends Base {
@@ -20,7 +20,7 @@ class TestInit extends Base {
 	}
 }
 
-private class Dummy implements Sugar {
+private class Dummy implements Lang {
 	static public var value = [1,2,3];
 	public var foo:Array<Int> = Dummy.value;
 	public var bar:String = _;

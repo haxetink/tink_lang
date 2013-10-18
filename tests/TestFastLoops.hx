@@ -1,11 +1,11 @@
 package ;
 
-import tink.lang.Sugar;
+import tink.Lang;
 
-class TestFastLoops extends Base implements Sugar {
+class TestFastLoops extends Base implements Lang {
 	function testArray() {
-		var a = [for (i in 0...10) Std.string(i)],
-			count = 50000;
+		var a = [for (i in 0...100) Std.string(i)],
+			count = 5000;
 		var l = Lambda.list(a),
 			sm = [for (x in a) x => x],
 			im = [for (x in a) Std.parseInt(x) => x];
@@ -38,7 +38,7 @@ class TestFastLoops extends Base implements Sugar {
 	}
 }
 
-class Tink implements Sugar {		
+class Tink implements Lang {		
 	static public inline function array<A>(a:Array<A>)
 		for ([x in a]) {}
 		

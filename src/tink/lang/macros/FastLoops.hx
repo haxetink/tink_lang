@@ -143,14 +143,11 @@ class FastLoops {
 			for (h in 'haxe.ds.IntMap,haxe.ds.StringMap'.split(','))
 				addRules(h, 
 					macro: {
-						// @:tink_for({ 
-						// 	var i = 0, a = , l;
-						// 	{
-						// 		a = untyped __call__('array_values', this.h);
-						// 		l = untyped __call__('count', a);								
-						// 	}
-						// }, i < l, a[i++])
-						// function iterator();
+						@:tink_for({ 
+							var i = 0, a = Reflect.fields(this.h), l;
+							l = a.length;
+						}, i < l, this.h[cast a[i++]])
+						function iterator();
 						@:tink_for({ 
 							var i = 0, a:Array<Dynamic> = untyped this.keys().arr, l;
 							l = a.length;

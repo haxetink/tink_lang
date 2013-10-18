@@ -2,7 +2,7 @@ package ;
 
 import haxe.ds.StringMap;
 import haxe.unit.TestCase;
-import tink.lang.Sugar;
+import tink.Lang;
 using Lambda;
 
 class ClsTest extends TestCase {
@@ -219,7 +219,7 @@ typedef Fwd2 = {
 	function foo2(f:Bool, g:Bool):Void;
 	function bar2():Void;
 }
-class Forwarder implements Sugar {
+class Forwarder implements Lang {
 	var fields = new StringMap<Dynamic>();
 	@:forward(!multiply) var target:FwdTarget;
 	@:forward function fwd2(x:Fwd2, x:Fwd1) {
@@ -231,7 +231,7 @@ class Forwarder implements Sugar {
 		this.target = target;
 	}
 }
-class Built implements Sugar {
+class Built implements Lang {
 	public var a:Int = 0;
 	@:read var b:Int = 1;
 	@:read(2) var c:Int;
@@ -251,7 +251,7 @@ private class Base {
 	}
 }
 
-@:verboseb class Child extends Base implements Sugar {
+@:verboseb class Child extends Base implements Lang {
 	public var b:Int = _;
 	public var c = (3);
 	public var d:Int = b;
@@ -302,7 +302,7 @@ class ControlLooper {
 	}	
 }
 
-class SuperLooper implements Sugar {
+class SuperLooper implements Lang {
 	public function new() { }
 	public function floatUp(start:Float, end:Float, step:Float, breaker) 
 		return [for (i += step in start...end) {
