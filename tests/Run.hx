@@ -26,6 +26,8 @@ class Run {
 			buf.push(parts[0]);
 		}
 		#end
+		// var x = 1;
+		// trace(macro foo() <<= x => 5);
 		var runner = new TestRunner();
 		for (test in tests)
 			runner.add(test);

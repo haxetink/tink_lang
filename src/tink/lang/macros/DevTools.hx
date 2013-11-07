@@ -5,11 +5,13 @@ import haxe.macro.Expr;
 using tink.MacroApi;
 
 class DevTools {
+	
 	static public function explain(e:Expr)
 		return switch e {
 			case macro @:explain $e: e.log();
 			default: e;
 		}
+		
 	static public function log(e:Expr) 
 		return switch e {
 			case macro @log($a{args}) $value:				
@@ -35,7 +37,7 @@ class DevTools {
 				var count = 
 					switch name {
 						case macro $n * $count:
-							name = n;
+							name = macro $n + ' * ' + $count;
 							count;
 						default: 1.toExpr();
 					}
@@ -51,5 +53,4 @@ class DevTools {
 				});
 			default: e;	
 		}
-		
 }

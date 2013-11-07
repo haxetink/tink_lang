@@ -29,7 +29,6 @@ abstract PhysicalType<T>(Either<Class<T>, Enum<T>>) {
 }
 //TODO: this helper should go somewhere
 class Base extends TestCase {
-	
 	function fail(msg:String, ?c : PosInfos) {
 		currentTest.done = true;
 		currentTest.success = false;

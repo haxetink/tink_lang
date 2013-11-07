@@ -34,7 +34,6 @@ class Dispatch {
 											macro : tink.core.Signal.Noise;
 										else 
 											e.pos.makeBlankType();
-								member.publish();
 								if (e == null) {	
 									var own = '_' + member.name;
 									ctx.addMember( {
@@ -44,8 +43,8 @@ class Dispatch {
 									}, true).isPublic = false;	
 									e = make.publish(own.resolve(tag.pos));
 								}
-								//TODO: it's probably better to expose the signal through a getter
-								member.kind = FProp('default', 'null', make.published(t), e);
+								member.kind = FVar(make.published(t), e);
+								member.addMeta(':read');
 							default:
 								member.pos.error('can only declare signals on variables');
 						}

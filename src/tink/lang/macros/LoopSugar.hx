@@ -135,7 +135,10 @@ class LoopSugar {
 							OpBoolAnd.make(loopFlag.resolve(), head.condition),
 							head.beforeBody.concat([
 							EWhile(
-								macro false,
+								if (Context.defined('java')) 
+									macro Std.random(0) < 0
+								else
+									macro false,
 								body,
 								false
 							).at()]).toBlock(),
@@ -157,7 +160,7 @@ class LoopSugar {
 	static function makeIterator(e:Expr) {
 		function any() return [TPType(e.pos.makeBlankType())];
 		return 
-			if (e.is('Iterable'.asComplexType(any()))) 
+			if ((macro  $e.iterator()).is('Iterator'.asComplexType(any()))) 
 				macro @:pos(e.pos) $e.iterator();
 			else if (e.is('Iterator'.asComplexType(any()))) 
 				e;

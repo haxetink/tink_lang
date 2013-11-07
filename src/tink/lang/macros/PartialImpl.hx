@@ -49,7 +49,7 @@ class PartialImpl {
 					var index = 0,
 						paramMap = new Map();
 					for (p in i.t.get().params)
-						paramMap.set(p.name, i.params[index].toComplex());
+						paramMap.set(p.name, i.params[index++].toComplex());
 					if (!ctx.hasMember(f.name)) {
 						switch (f.kind) {
 							case FVar(read, write):

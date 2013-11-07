@@ -49,6 +49,8 @@ class FuncOptions {
 										init.typeof().map(Types.toComplex.bind(_, { direct: true })).orUse(pos.makeBlankType());
 									else
 										pos.makeBlankType();
+										
+							type = macro : Null<$type>;
 							fields.push({
 								name: name,
 								pos: pos,

@@ -1,7 +1,7 @@
 package tink;
 
-// #if !macro 
+#if !macro 
 	@:autoBuild(tink.lang.macros.ClassSugar.process()) 
-// #end
+#end
 interface Lang {
 }

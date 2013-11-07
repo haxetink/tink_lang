@@ -5,7 +5,54 @@ package tink.lang.macros;
 	import haxe.macro.Expr;
 	import tink.lang.macros.LoopSugar;
 	import tink.macro.ClassBuilder;
+	using tink.CoreApi;
 	using tink.MacroApi;
+	using StringTools;
+	
+	abstract PluginId(Pair<String, String>) {
+		public var lib(get, never):String;
+		public var name(get, never):String;
+		
+		public function new(lib, name) return new Pair(lib, name);
+		
+		inline function get_lib() return this.a;
+		inline function get_name() return this.b;
+		
+		public function toString()
+			return lib.urlEncode() + '/' + name.urlEncode();
+		
+		@:from static function fromObj(o)
+			return new PluginId(o.lib, o.name);
+			
+		@:from static function fromString(s:String)
+			return
+				switch s.split('/') {
+					case [lib, name]: new PluginId(lib.urlDecode(), name.urlDecode());
+					default: throw 'Invalid plugin id $s';
+				}
+	}
+	
+	typedef PluginRule = {
+		var id(default, null):PluginId;
+		var before(default, null):Bool;
+		@:optional var separate(default, null):Bool;
+	}
+	
+	private typedef CanonicalRule = {
+		first:PluginId,
+		then:PluginId,
+		separate:Bool,
+	}
+	
+	typedef Plugin = {
+		var id(default, null):PluginId;
+		@:optional var rules(default, null):Array<PluginRule>;
+		var transform(default, null):Expr->Expr;
+	}
+	
+	// typedef SyntaxPlugin = Plugin<Expr->Expr>;
+	// typedef 
+	
 #end
 
 class ClassSugar {
@@ -49,22 +96,138 @@ class ClassSugar {
 					}
 			}
 		
+		
+		static var plugins:Array<Plugin> = [];
+		static var order = new Map<String, CanonicalRule>();
+		static public function addPlugin(p:Plugin) {
+			function fullId(p:PluginId)
+				return p.lib.urlEncode()+'/'+p.name.urlEncode();
+			plugins.push(p);
+			for (rule in p.rules) {
+				var c = canonical(p, rule);
+				var id1 = fullId(c.first),
+					id2 = fullId(c.then);
+				var fullId = '$id1 -> $id2';
+				// var fullId = if (id1 > id2) '$id1 -> $id2' else '$id2 -> $id1';
+				order[fullId] = merge(order[fullId], c);
+			}
+		}
+		static function orderPlugins() {
+			
+			// var lookup = new Map(),
+				// offset = 0;
+			// var ret = [[]];
+			var indices = new Map(),
+				index = 0;
+			for (p in plugins)
+				indices.set(p.id.toString(), index++);
+			function index(p:PluginId)
+				return indices.get(p.toString());
+			var matrix = [for (p in plugins) 
+				[for (p in plugins) 0]
+			];
+			function max(x, y, v) {
+				if (x == y) return v;
+				var is = matrix[x][y];
+				return 
+					if (is < v) matrix[x][y] = v;
+					else is;
+			}
+			function log(x:Dynamic)
+				Context.currentPos().warning(Std.string(x));
+			for (r in order) {
+				var first = index(r.first),
+					then = index(r.then);
+				if (first == null || then == null) continue;
+				var delta = max(then, first, if (r.separate) 2 else 1);
+				log(r);
+				function inc(first, then) {
+					var toInc = [];
+					
+					for (p in 0...then+1)
+						if (matrix[first][p] > 0) {
+							max(then, p, delta + matrix[first][p] - 1);
+							toInc.push(p);
+						}
+					
+					log([[first, then], toInc]);
+					
+					for (p in toInc)
+						inc(p, first);
+				}
+				inc(first, then);
+			}
+			throw [for (p in plugins) p.id.toString()] + ':\n' + matrix.join('\n');
+		}
+		static var foo = {
+				
+			// addPlugin({
+			// 	id: '_/1',
+			// 	rules: [
+			// 		{ before: true, id: '_/2' },
+			// 	],
+			// 	transform: function transform(e) return e
+			// });	
+			// addPlugin({
+			// 	id: '_/2',
+			// 	rules: [
+			// 		{ before: true, id: '_/3' },
+			// 	],
+			// 	transform: function transform(e) return e
+			// });	
+			// addPlugin({
+			// 	id: '_/3',
+			// 	rules: [
+			// 		{ before: true, id: '_/4' },
+			// 	],
+			// 	transform: function transform(e) return e
+			// });	
+			// addPlugin({
+			// 	id: '_/4',
+			// 	rules: [
+			// 		// { before: true, id: 'tink_lang/one' },
+			// 	],
+			// 	transform: function transform(e) return e
+			// });	
+			
+			// orderPlugins();
+			// null;
+		}	
+		static function merge(c1:CanonicalRule, c2:CanonicalRule)
+			return
+				if (c1 == null) c2;
+				else if (c2 == null) c1;
+				else {
+					if (c1.first.toString() != c2.first.toString()) 
+						throw 'Conflicting rules for ${c1.first.lib+"/"+c1.first.name} and ${c2.first.lib+"/"+c2.first.name}';
+					{
+						first: c1.first,
+						then: c1.then,
+						separate: c1.separate || c2.separate
+					}
+				}
+		
+		static function canonical(p:Plugin, rule:PluginRule):CanonicalRule {
+			return
+				if (rule.before) {
+					first: p.id,
+					then: rule.id,
+					separate: rule.separate == true
+				}
+				else {
+					first: rule.id,
+					then: p.id,
+					separate: rule.separate == true					
+				}
+		}
+		
 		//TODO: it seems a little monolithic to yank all plugins here
 		static public var PLUGINS = [
-			// simpleSugar(LoopSugar.fold),
-			//  // #if (tink_reactive || !tink_core) 
-			// 	// tink.reactive.bindings.macros.BindableProperties.cache,
-			// // #end
 			FuncOptions.process,
 			Dispatch.members,
 			Init.process,
 			Forward.process,
 			PropBuilder.process,
-			// #if (tink_reactive || !tink_core)
-			// 	tink.reactive.bindings.macros.BindableProperties.make,
-			// #else
-			// 	noBindings,
-			// #end
 			syntax(Pipelining.shortBind),
 			
 			simpleSugar(function (e) return switch e {
@@ -93,8 +256,6 @@ class ClassSugar {
 					}
 				default: e;
 			}),
-			// // simpleSugar(tink.markup.formats.Fast.build),
-			// // simpleSugar(tink.markup.formats.Dom.build),
 			simpleSugar(Pipelining.transform, true),
 			simpleSugar(DevTools.log, true),
 			simpleSugar(DevTools.measure),

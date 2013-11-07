@@ -6,29 +6,45 @@ class TestFastLoops extends Base implements Lang {
 	function testArray() {
 		var a = [for (i in 0...100) Std.string(i)],
 			count = 5000;
+		#if java
+			count *= 3;
+		#elseif cpp
+			count *= 10;
+		#end
 		var l = Lambda.list(a),
 			sm = [for (x in a) x => x],
 			im = [for (x in a) Std.parseInt(x) => x];
 		
 		#if benchmark
-		@measure('tink array' * (count * 20)) Tink.array(a);
-		@measure('haxe array' * (count * 20)) Haxe.array(a);
+		@measure('tink Array' * (count * 20)) Tink.array(a);
+		@measure('haxe Array' * (count * 20)) Haxe.array(a);
 		
-		@measure('tink list' * (count * 20)) Tink.list(l);
-		@measure('haxe list' * (count * 20)) Haxe.list(l);
+		@measure('tink List' * (count * 20)) Tink.list(l);
+		@measure('haxe List' * (count * 20)) Haxe.list(l);
 		
-		@measure('tink smap' * count) Tink.smap(sm);
-		@measure('haxe smap' * count) Haxe.smap(sm);
+		@measure('tink StringMap' * count) Tink.smap(sm);
+		@measure('haxe StringMap' * count) Haxe.smap(sm);
 		
-		@measure('tink smapk' * count) Tink.smapk(sm);
-		@measure('haxe smapk' * count) Haxe.smapk(sm);
+		@measure('tink StringMap keys' * count) Tink.smapk(sm);
+		@measure('haxe StringMap keys' * count) Haxe.smapk(sm);
 		
-		@measure('tink imap' * count) Tink.imap(im);
-		@measure('haxe imap' * count) Haxe.imap(im);
+		@measure('tink IntMap' * count) Tink.imap(im);
+		@measure('haxe IntMap' * count) Haxe.imap(im);
 		
-		@measure('tink imapk' * count) Tink.imapk(im);
-		@measure('haxe imapk' * count) Haxe.imapk(im);
+		@measure('tink IntMap keys' * count) Tink.imapk(im);
+		@measure('haxe IntMap keys' * count) Haxe.imapk(im);
 		#end
+		inline function sort<T>(a:Array<T>) {
+			var ret = a.join(',').split(',');
+			ret.sort(Reflect.compare);
+			return ret.join(',');			
+		}			
+
+		assertEquals(sort(a), sort([for ([i in sm.keys()]) i]));
+		assertEquals(sort(a), sort([for ([i in im.keys()]) i]));
+		
+		assertEquals(sort(a), sort([for ([i in sm]) i]));
+		assertEquals(sort(a), sort([for ([i in im]) i]));
 		
 		for ([x in a, i in 0...a.length])
 			assertEquals(Std.string(i), x);

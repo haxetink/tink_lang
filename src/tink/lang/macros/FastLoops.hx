@@ -130,6 +130,68 @@ class FastLoops {
 				}
 			);
 		}
+		else if (Context.defined('java')) {
+			addRules('Array',
+				macro: {
+					@:tink_for( { var i = 0, l = this.length; }, i < l, this[i++])
+					function iterator();
+				}
+			);	
+			addRules('haxe.ds.IntMap', 
+				macro: {
+					@:tink_for(
+						{ 
+							var i = 0, keys = this._keys, flags = this.flags, l;
+							l = keys.length;
+						}, 
+						{ 
+							while (i < l && haxe.ds.IntMap.isEither(flags, keys[i])) i++; 
+							i < l; 
+						}, 
+						this.get(this.cachedKey = keys[this.cachedIndex = i++])
+					)
+					function iterator();
+					@:tink_for(
+						{ 
+							var i = 0, keys = this._keys, flags = this.flags, l;
+							l = keys.length;
+						}, 
+						{  
+							while (i < l && haxe.ds.IntMap.isEither(flags, keys[i])) i++; 
+							i < l; 
+						}, 
+						this.cachedKey = keys[this.cachedIndex = i++]
+					)
+					function keys();
+				}
+			);			
+			addRules('haxe.ds.StringMap', 
+				macro: {
+					@:tink_for(
+						{ 
+							var i = 0, keys = this._keys, l = this.nBuckets, hashes = this.hashes;
+						}, 
+						{
+							while (i < l && haxe.ds.StringMap.isEither(hashes[i])) i++; 
+							i < l; 
+						}, 
+						this.get(this.cachedKey = keys[this.cachedIndex = i++])
+					)
+					function iterator();
+					@:tink_for(
+						{ 
+							var i = 0, keys = this._keys, l = this.nBuckets, hashes = this.hashes;
+						}, 
+						{
+							while (i < l && haxe.ds.StringMap.isEither(hashes[i])) i++; 
+							i < l; 
+						}, 
+						this.cachedKey = keys[this.cachedIndex = i++]
+					)
+					function keys();
+				}
+			);			
+		}
 		else {
 			addRules('Array',
 				macro: {
@@ -144,9 +206,9 @@ class FastLoops {
 				addRules(h, 
 					macro: {
 						@:tink_for({ 
-							var i = 0, a = Reflect.fields(this.h), l;
+							var i = 0, a = Reflect.fields(this.h), l, h = this.h;
 							l = a.length;
-						}, i < l, this.h[cast a[i++]])
+						}, i < l, h[cast a[i++]])
 						function iterator();
 						@:tink_for({ 
 							var i = 0, a:Array<Dynamic> = untyped this.keys().arr, l;
@@ -158,6 +220,37 @@ class FastLoops {
 
 		}
 		
+		if (Context.defined('flash') && !Context.defined('flash8')) {
+			for (h in 'haxe.ds.IntMap,haxe.ds.StringMap'.split(','))
+				addRules('haxe.ds.IntMap',
+					macro: {
+						@:tink_for({ 
+							var i = 0, h = this.h, keys = untyped __keys__(this.h), l;
+							l = (cast keys).length;
+						}, i < l, untyped h[keys[i++]])
+						function iterator();
+						@:tink_for({ 
+							var i = 0, keys = untyped __keys__(this.h), l;
+							l = (cast keys).length;
+						}, i < l, keys[i++])
+						function keys();
+					}			
+				);
+			addRules('haxe.ds.StringMap',
+				macro: {
+					@:tink_for({ 
+						var i = 0, h = this.h, keys:Array<String> = untyped __keys__(this.h), l;
+						l = (cast keys).length;
+					}, i < l, untyped h[keys[i++]])
+					function iterator();
+					@:tink_for({ 
+						var i = 0, keys:Array<String> = untyped __keys__(this.h), l;
+						l = (cast keys).length;
+					}, i < l, keys[i++].substr(1))
+					function keys();
+				}			
+			);			
+		}
 		
 		addRules('List', 
 			macro : {

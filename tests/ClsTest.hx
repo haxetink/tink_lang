@@ -71,7 +71,7 @@ class ClsTest extends TestCase {
 		                
 		assertEquals(8, b.i);
 		b.i = 8;
-		#if !cpp //in cpp this will fail, since Reflect.field calls the accessor
+		#if (!cpp && !java)//in cpp this will fail, since Reflect.field calls the accessor
 			assertFalse(Reflect.field(b, 'i') == b.i);
 		#end
 		assertEquals(b.i, 8);
@@ -94,32 +94,32 @@ class ClsTest extends TestCase {
 		var loop = new SuperLooper(),
 			control = new ControlLooper();
 		
-		function floatUp(start, end, step, ?breaker) {
+		function floatUp(start:Float, end:Float, step:Float, ?breaker) {
 			if (breaker == null) breaker = function (_) return false;
 			compareFloatArray(
-				loop.floatUp(start, end, step, breaker),
-				control.floatUp(start, end, step, breaker)
+				control.floatUp(start, end, step, breaker),
+				loop.floatUp(start, end, step, breaker)
 			);
 		}
-		function floatDown(end, start, step, ?breaker) {
+		function floatDown(end:Float, start:Float, step:Float, ?breaker) {
 			if (breaker == null) breaker = function (_) return false;
 			compareFloatArray(
-				loop.floatDown(start, end, step, breaker),
-				control.floatDown(start, end, step, breaker)
+				control.floatDown(start, end, step, breaker),
+				loop.floatDown(start, end, step, breaker)
 			);
 		}
 		function intUp(start, end, step, ?breaker) {
 			if (breaker == null) breaker = function (_) return false;
 			compareArray(
-				loop.intUp(start, end, step, breaker),
-				control.intUp(start, end, step, breaker)
+				control.intUp(start, end, step, breaker),
+				loop.intUp(start, end, step, breaker)
 			);
 		}
 		function intDown(end, start, step, ?breaker) {
 			if (breaker == null) breaker = function (_) return false;
 			compareArray(
-				loop.intDown(start, end, step, breaker),
-				control.intDown(start, end, step, breaker)
+				control.intDown(start, end, step, breaker),
+				loop.intDown(start, end, step, breaker)
 			);
 		}	
 		
@@ -127,6 +127,7 @@ class ClsTest extends TestCase {
 			control.floatUp(0.1, 2.9, 0.5, function (_) return false),
 			[0.1, 0.6, 1.1, 1.6, 2.1, 2.6]
 		);
+		
 		compareArray(
 			control.intUp(3, 17, 4, function (_) return false),
 			[3, 7, 11, 15]
@@ -149,11 +150,11 @@ class ClsTest extends TestCase {
 				a;
 			}
 		);
-		
-		for (i in 0...50) {
-			floatUp(0, i, .1);
-			floatUp(0, 0.1 * i, .1);
 
+		for (i in 1...50) {
+			floatUp(.0, i * 1.0, .1);
+			floatUp(.0, 0.1 * i, .1);
+			
 			var breakAt = (i >>> 1) + Std.random(i);
 			
 			floatUp(0, i, 1.0, function (i) return i >= breakAt);
@@ -210,15 +211,18 @@ typedef FwdTarget = {
 	function multiply(a:Int, b:Int):Int;
 	var x:Int;
 }
+
 typedef Fwd1 = {
 	var y:Float;
 	function foo1(a:Int, b:Int, c:Int):Void;
 	function bar1(x:Float):Void;
 }
+
 typedef Fwd2 = {
 	function foo2(f:Bool, g:Bool):Void;
 	function bar2():Void;
 }
+
 class Forwarder implements Lang {
 	var fields = new StringMap<Dynamic>();
 	@:forward(!multiply) var target:FwdTarget;
@@ -239,7 +243,7 @@ class Built implements Lang {
 	@:read(2 * e) var e:Int = 2;
 	@:prop var f:Int = 5;
 	@:prop(param << 1) var g:Int = 6;
-	@:isVar @:prop(h >>> 1, h = param << 1) var h:Int = 14;
+	@:prop(h >>> 1, h = param << 1) var h:Int = 14;
 	@:prop(h+1, h = param-1) var i:Int;
 	public function new() {}
 }
@@ -267,8 +271,9 @@ class ControlLooper {
 	public function floatUp(start:Float, end:Float, step:Float, breaker) {
 		var ret = [];
 		for (i in 0...Math.ceil((end - start) / step)) {
+			var i = i * step + start;
 			if (breaker(i)) break;
-			ret.push(i * step + start);
+			ret.push(i);
 		}
 		return ret;
 	}
@@ -276,17 +281,18 @@ class ControlLooper {
 		var ret = [];
 		var count = Math.ceil((start - end) / step);
 		for (i in 0...count) {
-			var i = count - i - 1;
+			var i = (count - i - 1) * step + end;
 			if (breaker(i)) break;
-			ret.push(i * step + end);
+			ret.push(i);
 		}
 		return ret;
 	}
 	public function intUp(start:Int, end:Int, step:Int, breaker) {
 		var ret = [];
 		for (i in 0...Math.ceil((end - start) / step)) {
+			var i = i * step + start;
 			if (breaker(i)) break;
-			ret.push(i * step + start);
+			ret.push(i);
 		}
 		return ret;
 	}
@@ -294,9 +300,9 @@ class ControlLooper {
 		var ret = [];
 		var count = Math.ceil((start - end) / step);
 		for (i in 0...count) {
-			var i = count - i - 1;
+			var i = (count - i - 1) * step + end;
 			if (breaker(i)) break;
-			ret.push(i * step + end);
+			ret.push(i);
 		}
 		return ret;
 	}	
