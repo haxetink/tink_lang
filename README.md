@@ -183,7 +183,7 @@ This feature should be used sparsingly. Composition is preferable (check out [sy
 1. Performance matters so badly, that you cannot afford the cost of composition. Beware of premature optimization here.
 2. You have some intricate relationship that is hard, if not impossible, to express in the type system.
 
-To expand on the above example: Haxe's `@:generic` can work some wonders, but it cannot really cover everything. For example it demands for type parameters to by physical types (classes/interfaces or enums). Partial implementations don't have that restriction. Also, some constraints cannot be expressed with types, such as "can be iterated over" (which can be satisfied in many way) or "supports array access" (which is true for Array, ArrayAccess and any abstract that defines array access) or "supports + operator".
+To expand on the second case: Haxe's `@:generic` can work some wonders, but it cannot really cover everything. For example it demands for type parameters to by physical types (classes/interfaces or enums). Partial implementations don't have that restriction. Also, some constraints cannot be expressed with types, such as "can be iterated over" (which can be satisfied in many way) or "supports array access" (which is true for Array, ArrayAccess and any abstract that defines array access) or "supports + operator".
 
 One major trip wire is that `using` in the scope of the partial implementation will not work. This is not absolutely unsolvable, but a solution with the means currently provided by the macro API would be very expensive.
 
@@ -290,8 +290,6 @@ Similarly, you can define properties with both getter and setter:
 @:property(guard) var b:B;
 
 @:property(readC, writeC) var c:C; 
-
-@:property(readD, @param(newD) writeD) var d:D; 
 ```
 
 This will be converted into:
@@ -302,45 +300,17 @@ function get_a() return this.a;
 function set_a(param) return this.a = param;
 
 @:isVar public var b(get, set):B;
-function get_a() return this.a;
-function set_a(param) return this.a = guard;
+function get_b() return this.b;
+function set_b(param) return this.b = guard;
 
 public var c(get, set):C; 
-function get_c() readC;t
+function get_c() readC;
 function set_c(param) writeC;
-
-public var d(get, set):D; 
-function get_c() readD;
-function set_c(newD) writeD;
 ```
 
-### Sharp properties
+These properties are also [published](#publishing), and the getters and setters use [implicit returns](#implicit-return). Also, `@:prop` is a recognized shortcut and you can use `inline` to cause the getter and setter to be inlined.
 
-New in tink for Haxe 3 is the following notation:
-
-```
-var x = {
-	@get foo * 2;
-	@set foo = param / 2;
-	@init {
-		var o = 3;
-		foo = o;
-	}
-	7;
-}
-```
-
-This notation is roughly inspired from C# property notation - hence the name. As you can see it is a block that containts an initialization value and 3 different clauses:
-
-- `@get` - If present, will be used to generate the body of the getter and causes [publishing](#publishing). Return will be added implicitly if needed. If you wish to generate a plain getter, use `@get _`. Omission will result in `default` field access. Can be prefixed with `@inline` for an inlined getter
-- `@set` - If present, will be used to generate the body of the setter and causes [publishing](#publishing). Return will be added implicitly if needed. If you wish to generate a plain setter, use `@set _`. Omission will result in `null` field access if there is a getter and `default` otherwise. The setter parameter will be called `param`, but you can call it otherwise, by specifying `@set(customName) ...`. Can be prefixed with `@inline` for an inlined setter;
-- `@init` - If present, will be used to initialize the field. Technically you can do anything you like in this statement (also it doesn't need to be a block). However, you should use it only to keep code that sets up a member close to that member and not to trigger arbitrary side effects. A good example to use it is to avoid [setter bypass](#setter-bypass)
-
-To intepret this syntax, tink will first peel off the 3 clauses above (all of which are optional). If the remaining block has no statements left, tink stops there. If it has one statement left, then that is considerd the inititialization value, or else the whole block is. That value is processed according to the rules of [direct initialization](#direct-initialization).
-
-#### Sharp notation implementation & details
-
-In fact sharp notation is only a sugar based on [property notation](#property-notation) and [direct intialization](#direct-initialization). If there is an `@init`, it is copied to the constructor. If there is a `@get` and a `@set`, they will be converted to a `@:property` clause. If there is just a `@get`, it will be converted to a `@:readonly` clause. If there is none of both, in fact there will be no property but `(default, default)` access. In that case the field also is not [published](#publishing). The remainder is deleted if it's an empty block, "unpacked" if it's a single statement block or left as is, if
+It is important to point out the second case, which is the guard case.
 
 ## Function options
 

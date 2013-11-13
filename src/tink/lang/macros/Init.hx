@@ -40,7 +40,7 @@ class Init {
 		
 	static public function member(ctx:ClassBuilder, member:Member, t:ComplexType, e:Expr) 
 		if (ctx.target.isInterface) 
-			member.addMeta(':default', e.pos, [ECheckType(e, t).at(e.pos)]);
+			PartialImpl.setDefault(member, ECheckType(e, t).at(e.pos));
 		else 
 			field(ctx.getConstructor(), member.name, t, e);
 	
