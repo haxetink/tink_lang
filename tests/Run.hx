@@ -10,7 +10,8 @@ class Run {
 		new TestFutureDecl(),
 		new TestSignalDecl(),
 		new TestFastLoops(),
-		new TestOptions()
+		new TestOptions(),
+		new TestPartial()
 	];
 	static function main() {
 		#if js //works for nodejs and browsers alike
@@ -26,8 +27,6 @@ class Run {
 			buf.push(parts[0]);
 		}
 		#end
-		// var x = 1;
-		// trace(macro foo() <<= x => 5);
 		var runner = new TestRunner();
 		for (test in tests)
 			runner.add(test);
