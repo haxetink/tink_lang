@@ -96,8 +96,7 @@ class LoopSugar {
 				case [macro $i{_} in $target] if (single):
 					macro for (${its[0]}) $expr;
 				default:
-					it = its.toArray();	
-					doTransform(it, expr);
+					macro for ([$a{its}]) $expr;
 			}
 			
 		return 
@@ -461,14 +460,22 @@ class LoopSugar {
 
 		return e;
 	}
-	static public function transformLoop(e:Expr) {			
+	
+	static public function secondPass(e:Expr)
+		return
+			switch e {
+				case macro for ([$a{its}]) $body:
+					doTransform(its.toArray(), body);
+				default: e;
+			}
+
+	static public function firstPass(e:Expr) 
 		return	
 			switch (e.expr) {
 				case EFor(it, expr):
 					transform(it, expr);
 				default: e;
 			}
-	}
 	
 }
 

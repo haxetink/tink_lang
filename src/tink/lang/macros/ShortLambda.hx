@@ -26,40 +26,51 @@ class ShortLambda {
 				default: e;
 			}
 	
+	static function parseArg(arg:Expr) 
+		return
+			switch arg {
+				case macro _: Success(1);
+				case macro []: arg.reject('At least one expression needed');
+				case macro [$a{args}] if (Lambda.foreach(args, Exprs.isWildcard)):
+					Success(args.length);
+				default: arg.pos.makeFailure('Unsuitable switch argument');
+			}
+	
+	static function returnIfNotVoid(old:Expr, _) //pattern matcher seems to mingle the expression beyond recognition
+		return
+			if (old.typeof().sure().getID() == 'Void') old;
+			else
+				old.yield(function (e) return macro @:pos(old.pos) return $e, { leaveLoops : true });
+	
+	static function arrow(args, body:Expr) 
+		return body.outerTransform(returnIfNotVoid.bind(body)).func(args, false).asExpr();
+	
+	static function getIdents(exprs:Array<Expr>)
+		return [
+			for (e in exprs)
+				e.getIdent().sure().toArg()
+		];
+	
 	static public function process(e:Expr) 
 		return
 			switch e {
-				case { expr: EMeta({ name: tag, params: [], pos: mpos }, { expr:ESwitch(macro _, cases, edef), pos:pos }) } if (tag == 'do' || tag == 'f'):
-					var tmp = MacroApi.tempName();
-					process(EMeta( 
-						{ name: tag, params: [tmp.resolve()], pos: mpos },
-						ESwitch(tmp.resolve(), cases, edef).at(pos)
-					).at(e.pos));
-					
-				case macro ![$a{args}] => $body
-					,macro @do($a{args}) $body:	
-					var nuargs = [];
-					
-					for (arg in args)
-						switch arg {
-							case { expr: EVars(vars) }:
-								for (v in vars) 
-									nuargs.push(v.name.toArg(v.type, v.expr));
-							case macro $i{name}: 
-								nuargs.push(name.toArg());
-							default: arg.reject('expected identifier or variable declaration');	
-						}
-					
-					body.func(nuargs, false).asExpr(e.pos);
-					
-				case macro [$a{args}] => $body
-					,macro @f($a{args}) $body:
-					
-					body.func([
-						for (arg in args)
-							arg.getIdent().sure().toArg()
-					], true).asExpr(e.pos);
-					
+				case { expr:ESwitch(arg, cases, edef), pos:pos }:					
+					switch parseArg(arg) {
+						case Success(count):
+							var tmps = [for (i in 0...count) MacroApi.tempName().resolve()];
+							process(
+								macro @:pos(pos) [$a{tmps}] => ${ESwitch(tmps.toArray(), cases, edef).at(pos)}
+							);
+						default: e;
+					}
+				case macro [$a{args}] => $body:
+					arrow(getIdents(args), body);
+				case macro $i{arg} => $body:
+					arrow([arg.toArg()], body);
+				case macro @do($a{args}) $body:
+					body.func(getIdents(args), false).asExpr(e.pos);
+				case macro @f($a{args}) $body:
+					body.func(getIdents(args), true).asExpr(e.pos);
 				default: e;
 			}
 }

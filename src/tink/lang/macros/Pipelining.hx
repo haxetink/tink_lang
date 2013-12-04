@@ -61,9 +61,9 @@ class Pipelining {
 			else generate(data, e.pos);
 	}
 			
-	static var FUTURE = macro tink.core.types.Future;
-	static var OUTCOME = macro tink.core.types.Outcome;
-	static var SURPRISE = macro tink.core.types.Surprise;	
+	static var FUTURE = macro tink.core.Future;
+	static var OUTCOME = macro tink.core.Outcome;
+	static var SURPRISE = macro tink.core.Surprise;	
 	static var OP = macro tink.lang.helpers.CollectorOp;
 	
 	static function generate(d:Data, pos:Position) {
@@ -110,15 +110,15 @@ class Pipelining {
 		}
 		
 		var successType = d.handler.pos.makeBlankType();
-		var returnType = macro : tink.core.types.Outcome<$successType, $dType>;
+		var returnType = macro : tink.core.Outcome<$successType, $dType>;
 		
 		var chainerDecl = 
 			(macro 
 				function <A>(
-					?dFault:tink.lang.helpers.CollectorOp<tink.core.types.Outcome< A, $dType >> , _handler:A->Void
+					?dFault:tink.lang.helpers.CollectorOp<tink.core.Outcome< A, $dType >> , _handler:A->Void
 				) 
 					$i{dissolverName} =
-						dFault.get(function (o:tink.core.types.Outcome< A, $dType >) 
+						dFault.get(function (o:tink.core.Outcome< A, $dType >) 
 							switch (o) {
 								case Success(d): _handler(d);
 								case Failure(f): 
@@ -127,15 +127,13 @@ class Pipelining {
 			).getFunction().sure().asExpr(chainerName, pos);
 					
 		var ret = (macro {
-			${dissolverName.define(macro null, macro : tink.core.types.Callback.CallbackLink)};
+			${dissolverName.define(macro null, macro : tink.core.Callback.CallbackLink)};
 			$chainerDecl;
 			$body;
 			function () return $i{dissolverName}.dissolve();
 		}).func([yielderName.toArg(TFunction([returnType], macro : Void))]).asExpr(pos);
-		//if (Std.string(pos).indexOf('Haxe.hx') == -1)
+		
 		return macro @:pos(pos) $OP.demote($promoter($FUTURE.ofAsyncCall($ret))).toFuture();
-		//else
-		//return (macro @:pos(pos) $OP.demote($promoter($FUTURE.ofAsyncCall($ret))).toFuture()).log();
 	}
 }
 private typedef Collectors = Array<Array<{ param:String, operation: Expr }>>;

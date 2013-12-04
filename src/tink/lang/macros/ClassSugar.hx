@@ -68,6 +68,8 @@ class ClassSugar {
 				default: e;				
 			}),
 			simpleSugar(LoopSugar.comprehension),
+			simpleSugar(LoopSugar.firstPass),
+			
 			simpleSugar(ShortLambda.protectMaps),
 			simpleSugar(ShortLambda.process),
 			simpleSugar(ShortLambda.postfix),
@@ -90,7 +92,7 @@ class ClassSugar {
 			simpleSugar(DevTools.measure),
 			simpleSugar(DevTools.explain),
 			PartialImpl.process,
-			simpleSugar(LoopSugar.transformLoop),
+			simpleSugar(LoopSugar.secondPass),
 		];	
 	#end
 }

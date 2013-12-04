@@ -15,10 +15,14 @@ class TestOptions extends Base {
 	function test() {
 		var d = new Dummy();
 		for (i in 0...10) {
-			var r = d.test({x:4});
+			var r = d.test({x:i});
 			
 			assertEquals(r.o1.x, r.o2.a);
 		}
-		
+		var r = d.test();
+		assertEquals(5, r.o1.x);
+		assertEquals('bar', r.o1.y);
+		assertEquals(5, r.o2.a);
+		assertEquals(7, r.o2.b);
 	}
 }
