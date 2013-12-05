@@ -37,12 +37,27 @@ class FuncOptions {
 				switch arg.value.expr {
 					case EArrayDecl(parts):
 						var opt = true,
-							fields = new Array<Field>();
+							fields = new Array<Field>(),
+							direct = arg.name == '_';
+							
+						if (direct)	
+							arg.name = MacroApi.tempName();
+							
 						function add(pos, name, type, init) {
 							if (init == null) 
 								opt = false;
-							else 
-								prepend(macro @:pos(pos) if ($i{arg.name}.$name == null) $i{arg.name}.$name = ${init});
+								
+							if (direct) 
+								if (init == null)
+									prepend(macro @:pos(pos) var $name = $i{arg.name}.$name);
+								else
+									prepend(macro @:pos(pos) var $name = if ($i{arg.name}.$name == null) $init else $i{arg.name}.$name);
+							else
+								if (init == null) 
+									opt = false;
+								else 
+									prepend(macro @:pos(pos) if ($i{arg.name}.$name == null) $i{arg.name}.$name = ${init});
+								
 							if (type == null)
 								type = 
 									if (init != null)
@@ -73,6 +88,7 @@ class FuncOptions {
 							prepend(macro if ($i{arg.name} == null) $i{arg.name} = {});
 							arg.opt = true;
 						}
+						
 						arg.type = TAnonymous(fields); //TODO: we could trick the typer into looking over the body
 						arg.value = null;
 					default:

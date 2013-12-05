@@ -436,7 +436,7 @@ function bar(?_:{?x:X,?y:Y}) {
 }
 ```
 
-This comes pretty close to [named parameters](http://en.wikipedia.org/wiki/Named_parameter). Future versions may use inlining to reduce the overhead completely, but currently that requires enhancements of the compiler's optimizer.
+This comes pretty close to [named parameters](http://en.wikipedia.org/wiki/Named_parameter). Future versions may use inlining to reduce the overhead completely, but currently it seems impossible to trick the compiler's optimizer into removing the allocation.
 
 ### Sharing options
 

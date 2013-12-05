@@ -65,8 +65,15 @@ class ClassSugar {
 						(macro @:pos(e.pos) haxe.Timer.delay($handler, Std.int($delta * 1000)).stop),
 						macro : tink.core.types.Callback.CallbackLink
 					).at(e.pos);
-				default: e;				
+					
+				case macro @every($delta) $handler:
+					return ECheckType(
+						(macro @:pos(e.pos) haxe.Timer.delay($handler, Std.int($delta * 1000)).stop),
+						macro : tink.core.types.Callback.CallbackLink
+					).at(e.pos);		
+				default: e;
 			}),
+			
 			simpleSugar(LoopSugar.comprehension),
 			simpleSugar(LoopSugar.firstPass),
 			
