@@ -68,7 +68,11 @@ class ClassSugar {
 					
 				case macro @every($delta) $handler:
 					return ECheckType(
-						(macro @:pos(e.pos) haxe.Timer.delay($handler, Std.int($delta * 1000)).stop),
+						(macro @:pos(e.pos) {
+							var t = new haxe.Timer(Std.int($delta * 1000));
+							t.run = $handler;
+							t.stop;
+						}),
 						macro : tink.core.types.Callback.CallbackLink
 					).at(e.pos);		
 				default: e;
@@ -94,7 +98,7 @@ class ClassSugar {
 					}
 				default: e;
 			}),
-			simpleSugar(Pipelining.transform, true),
+			// simpleSugar(Pipelining.transform, true),
 			simpleSugar(DevTools.log, true),
 			simpleSugar(DevTools.measure),
 			simpleSugar(DevTools.explain),
