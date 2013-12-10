@@ -240,23 +240,21 @@ class LoopSugar {
 	static var NOP = [].toBlock();
 	static function lazily(f:Void->CompiledHead):CompiledHead {
 		var l = Lazy.ofFunc(f);
+		
 		function map(h:CompiledHead->Expr):Expr 
 			return (function () return h(l)).bounce();
 		
+		function getNth(of, n)
+			return
+				if (of[n] == null) NOP;
+				else of[n];
+		
 		function getNthInit(n) 
-			return map(function (h) {
-				var ret = h.init[n];
-				return 
-					if (ret == null) NOP;
-					else ret;
-			});
-		function getNthStep(n) 
-			return map(function (h) {
-				var ret = h.beforeBody[n];
-				return 
-					if (ret == null) NOP;
-					else ret;
-			});
+			return map(function (h) return getNth(h.init, n));
+			
+		function getNthStep(n)
+			return map(function (h) return getNth(h.beforeBody, n));
+			
 		return {
 			init: [for (i in 0...5) getNthInit(i)],
 			beforeBody: [for (i in 0...5) getNthStep(i)],

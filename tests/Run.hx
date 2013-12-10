@@ -14,6 +14,7 @@ class Run {
 		new TestPartial(),
 		new TestShortLambda(),
 	];
+	
 	static function main() {
 		#if js //works for nodejs and browsers alike
 		var buf = [];

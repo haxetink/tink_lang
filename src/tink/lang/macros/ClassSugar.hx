@@ -34,7 +34,7 @@ class ClassSugar {
 			}
 			return syntax(transform);
 		}
-			
+		
 		static function syntax(rule:Expr->Expr) 
 			return function (ctx:ClassBuilder) {
 				function transform(f:Function)
@@ -57,7 +57,6 @@ class ClassSugar {
 			Init.process,
 			Forward.process,
 			PropBuilder.process,
-			syntax(Pipelining.shortBind),
 			
 			simpleSugar(function (e) return switch e {
 				case macro @in($delta) $handler:
@@ -98,10 +97,6 @@ class ClassSugar {
 					}
 				default: e;
 			}),
-			// simpleSugar(Pipelining.transform, true),
-			simpleSugar(DevTools.log, true),
-			simpleSugar(DevTools.measure),
-			simpleSugar(DevTools.explain),
 			PartialImpl.process,
 			simpleSugar(LoopSugar.secondPass),
 		];	

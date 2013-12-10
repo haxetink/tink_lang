@@ -5,7 +5,7 @@
 -cp tests
 -dce full
 -main Run
--D dump=pretty
+#-D dump=pretty
 #-D benchmark
 -js bin/tests.js
 #-swf bin/unit.swf

@@ -36,14 +36,14 @@ class ShortLambda {
 				default: arg.pos.makeFailure('Unsuitable switch argument');
 			}
 	
-	static function returnIfNotVoid(old:Expr, _) //pattern matcher seems to mingle the expression beyond recognition
+	static function returnIfNotVoid(old:Expr) //pattern matcher seems to mingle the expression beyond recognition
 		return
 			if (old.typeof().sure().getID() == 'Void') old;
 			else
 				old.yield(function (e) return macro @:pos(old.pos) return $e, { leaveLoops : true });
-	
+				
 	static function arrow(args, body:Expr) 
-		return body.outerTransform(returnIfNotVoid.bind(body)).func(args, false).asExpr();
+		return body.bounceExpr(returnIfNotVoid).func(args, false).asExpr();
 	
 	static function getIdents(exprs:Array<Expr>)
 		return [
