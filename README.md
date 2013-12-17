@@ -993,15 +993,19 @@ function (tmp) return switch tmp {
 }
 ```
 
-If you expect more than one argument, you can use `_2`, `_3` and so on:
+If you expect more than one argument, you can use `_2`, `_3` and so on or `[_,_]`, `[_, _, _]` and so on:
 
 ```
-@do switch _2 {
+switch _2 {
+	/* cases */
+}
+// or alternatively
+switch [_, _] {
 	/* cases */
 }
 ```
 
-Which becomes:
+Each of which becomes:
 
 ```
 function (tmp1, tmp2) switch [tmp1, tmp2] {
@@ -1012,7 +1016,7 @@ function (tmp1, tmp2) switch [tmp1, tmp2] {
 Put together with [trailing arguments](#trailing-arguments), you can write code like this:
 
 ```
-someOp() => @do switch _ {
+someOp() => switch _ {
 	case Success(result):
 	case Failure(error):
 }
