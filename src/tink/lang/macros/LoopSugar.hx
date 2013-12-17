@@ -63,7 +63,7 @@ class LoopSugar {
 
 	static function transform(it:Expr, expr:Expr) {
 		var vars:Array<Var> = [];
-		var single = true;
+		var single = !Context.defined('force_tink_loops');
 		var its = 
 			switch it {
 				case macro $a{many}: 
@@ -154,7 +154,7 @@ class LoopSugar {
 	}	
 	
 	static public function temp(name:String) 
-		return MacroApi.tempName('__tl_' + name);
+		return MacroApi.tempName(name);
 		
 	static function makeIterator(e:Expr) {
 		function any() return [TPType(e.pos.makeBlankType())];

@@ -65,7 +65,7 @@ class FastLoops {
 						@:tink_for({ 
 							var i = 0, a, l;
 							{
-								a = untyped __call__('array_values', this.h);
+								a = untyped __call__('array_values', @:privateAccess this.h);
 								l = untyped __call__('count', a);								
 							}
 						}, i < l, a[i++])
@@ -73,7 +73,7 @@ class FastLoops {
 						@:tink_for({ 
 							var i = 0, a, l;
 							{
-								a = untyped __call__('array_keys', this.h);
+								a = untyped __call__('array_keys', @:privateAccess this.h);
 								l = untyped __call__('count', a);
 							}
 						}, i < l, a[i++])
@@ -92,7 +92,7 @@ class FastLoops {
 					macro : { 
 						@:tink_for(
 							{
-								var h = this.h,
+								var h = @:privateAccess this.h,
 									i = 0, c, a;
 								{
 									c = untyped __dollar__hcount(h);
@@ -107,7 +107,7 @@ class FastLoops {
 						function keys();
 						@:tink_for(
 							{
-								var h = this.h,
+								var h = @:privateAccess this.h,
 									i = 0, c, a;
 								{
 									c = untyped __dollar__hcount(h);
@@ -141,26 +141,26 @@ class FastLoops {
 				macro: {
 					@:tink_for(
 						{ 
-							var i = 0, keys = this._keys, flags = this.flags, l;
+							var i = 0, keys = @:privateAccess this._keys, flags = @:privateAccess this.flags, l;
 							l = keys.length;
 						}, 
 						{ 
 							while (i < l && haxe.ds.IntMap.isEither(flags, keys[i])) i++; 
 							i < l; 
 						}, 
-						this.get(this.cachedKey = keys[this.cachedIndex = i++])
+						this.get(@:privateAccess this.cachedKey = keys[@:privateAccess this.cachedIndex = i++])
 					)
 					function iterator();
 					@:tink_for(
 						{ 
-							var i = 0, keys = this._keys, flags = this.flags, l;
+							var i = 0, keys = @:privateAccess this._keys, flags = @:privateAccess this.flags, l;
 							l = keys.length;
 						}, 
 						{  
 							while (i < l && haxe.ds.IntMap.isEither(flags, keys[i])) i++; 
 							i < l; 
 						}, 
-						this.cachedKey = keys[this.cachedIndex = i++]
+						@:privateAccess this.cachedKey = keys[@:privateAccess this.cachedIndex = i++]
 					)
 					function keys();
 				}
@@ -169,24 +169,24 @@ class FastLoops {
 				macro: {
 					@:tink_for(
 						{ 
-							var i = 0, keys = this._keys, l = this.nBuckets, hashes = this.hashes;
+							var i = 0, keys = @:privateAccess this._keys, l = @:privateAccess this.nBuckets, hashes = @:privateAccess this.hashes;
 						}, 
 						{
 							while (i < l && haxe.ds.StringMap.isEither(hashes[i])) i++; 
 							i < l; 
 						}, 
-						this.get(this.cachedKey = keys[this.cachedIndex = i++])
+						this.get(@:privateAccess this.cachedKey = keys[@:privateAccess this.cachedIndex = i++])
 					)
 					function iterator();
 					@:tink_for(
 						{ 
-							var i = 0, keys = this._keys, l = this.nBuckets, hashes = this.hashes;
+							var i = 0, keys = @:privateAccess this._keys, l = @:privateAccess this.nBuckets, hashes = @:privateAccess this.hashes;
 						}, 
 						{
 							while (i < l && haxe.ds.StringMap.isEither(hashes[i])) i++; 
 							i < l; 
 						}, 
-						this.cachedKey = keys[this.cachedIndex = i++]
+						@:privateAccess this.cachedKey = keys[@:privateAccess this.cachedIndex = i++]
 					)
 					function keys();
 				}
@@ -202,22 +202,36 @@ class FastLoops {
 		}
 		
 		if (Context.defined('js')) {
-			for (h in 'haxe.ds.IntMap,haxe.ds.StringMap'.split(','))
-				addRules(h, 
-					macro: {
-						@:tink_for({ 
-							var i = 0, a = Reflect.fields(this.h), l, h = this.h;
-							l = a.length;
-						}, i < l, h[cast a[i++]])
-						function iterator();
-						@:tink_for({ 
-							var i = 0, a:Array<Dynamic> = untyped this.keys().arr, l;
-							l = a.length;
-						}, i < l, a[i++])
-						function keys();
-					}
-				);
-
+			addRules(
+				'haxe.ds.IntMap',
+				macro: {
+					@:tink_for({ 
+						var i = 0, a = LoopHelpers.ik(this), l, h = @:privateAccess this.h;
+						l = a.length;
+					}, i < l, h[cast a[i++]])
+					function iterator();
+					@:tink_for({ 
+						var i = 0, a = LoopHelpers.ik(this), l;
+						l = a.length;
+					}, i < l, a[i++])
+					function keys();
+				}
+			);
+			addRules(
+				'haxe.ds.StringMap',
+				macro: {
+					@:tink_for({ 
+						var i = 0, a = LoopHelpers.skd(this), l, h = @:privateAccess this.h;
+						l = a.length;
+					}, i < l, h[cast a[i++]])
+					function iterator();
+					@:tink_for({ 
+						var i = 0, a = LoopHelpers.sk(this), l;
+						l = a.length;
+					}, i < l, a[i++])
+					function keys();
+				}
+			);
 		}
 		
 		if (Context.defined('flash') && !Context.defined('flash8')) {
@@ -225,12 +239,12 @@ class FastLoops {
 				addRules('haxe.ds.IntMap',
 					macro: {
 						@:tink_for({ 
-							var i = 0, h = this.h, keys = untyped __keys__(this.h), l;
+							var i = 0, h = @:privateAccess this.h, keys = untyped __keys__(@:privateAccess this.h), l;
 							l = (cast keys).length;
 						}, i < l, untyped h[keys[i++]])
 						function iterator();
 						@:tink_for({ 
-							var i = 0, keys = untyped __keys__(this.h), l;
+							var i = 0, keys = untyped __keys__(@:privateAccess this.h), l;
 							l = (cast keys).length;
 						}, i < l, keys[i++])
 						function keys();
@@ -239,12 +253,12 @@ class FastLoops {
 			addRules('haxe.ds.StringMap',
 				macro: {
 					@:tink_for({ 
-						var i = 0, h = this.h, keys:Array<String> = untyped __keys__(this.h), l;
+						var i = 0, h = @:privateAccess this.h, keys:Array<String> = untyped __keys__(@:privateAccess this.h), l;
 						l = (cast keys).length;
 					}, i < l, untyped h[keys[i++]])
 					function iterator();
 					@:tink_for({ 
-						var i = 0, keys:Array<String> = untyped __keys__(this.h), l;
+						var i = 0, keys:Array<String> = untyped __keys__(@:privateAccess this.h), l;
 						l = (cast keys).length;
 					}, i < l, keys[i++].substr(1))
 					function keys();
@@ -254,7 +268,7 @@ class FastLoops {
 		
 		addRules('List', 
 			macro : {
-				@:tink_for( { var h = this.h, x; }, h != null, { x = h[0]; h = h[1]; x; } ) function iterator();
+				@:tink_for( { var h = @:privateAccess this.h, x; }, h != null, { x = h[0]; h = h[1]; x; } ) function iterator();
 			}
 		);		
 	}
@@ -270,14 +284,13 @@ class FastLoops {
 			switch (e.expr) {
 				case EVars(vars):
 					for (v in vars) 
-						// if (vars[0].name.resolve().typeof().isSuccess()) - requires to check vs loop var also
 						add(v.name);
 				default:
 			}
 		}
 		var init = [tVar.define(e)];
 		for (e in f.init) 
-			init.push(e.finalize(vars, true).withPrivateAccess());
+			init.push(e.finalize(vars, true));
 		
 		return {
 			init: init,

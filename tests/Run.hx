@@ -2,6 +2,7 @@ package ;
 
 import haxe.unit.TestCase;
 import haxe.unit.TestRunner;
+import tink.lang.helpers.StringDispatcher;
 
 class Run {
 	static var tests:Array<TestCase> = [
