@@ -14,7 +14,6 @@ class Run {
 		new TestOptions(),
 		new TestPartial(),
 		new TestShortLambda(),
-		new TestDispatch()
 	];
 	
 	static function main() {
