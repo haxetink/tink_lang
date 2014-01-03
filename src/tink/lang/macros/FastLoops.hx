@@ -1,5 +1,6 @@
 package tink.lang.macros;
 
+import tink.lang.macros.CustomIter;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 
@@ -11,9 +12,17 @@ class FastLoops {
 		var init = 
 			switch (init.expr) {
 				case EBlock(exprs):
-					exprs;
+					if (exprs.length == 0)
+						new LoopSetup(exprs);
+					else
+						switch exprs[0].expr {
+							case EVars(vars):
+								new LoopSetup(vars, exprs.slice(1));
+							default:
+								new LoopSetup(exprs);
+						}
 				default:
-					init.reject('must be a block');
+					init.reject('must be a non-empty block');
 			}
 		return {
 			init: init,
@@ -272,7 +281,7 @@ class FastLoops {
 			}
 		);		
 	}
-	static function buildFastLoop(e:Expr, f:CustomIter) {
+	static function buildFastLoop(e:Expr, f:CustomIter):CustomIter {
 		var vars:Dynamic<String> = { };
 		function add(name:String) {
 			var n = LoopSugar.temp(name);
@@ -280,17 +289,21 @@ class FastLoops {
 			return n;
 		}
 		var tVar = add('this');
-		for (e in f.init) {
-			switch (e.expr) {
-				case EVars(vars):
-					for (v in vars) 
-						add(v.name);
-				default:
-			}
-		}
-		var init = [tVar.define(e)];
-		for (e in f.init) 
-			init.push(e.finalize(vars, true));
+		for (v in f.init.def) 
+			add(v.name);
+		
+		function rename(vs:Array<Var>):Array<Var>
+			return [for (v in vs) { name: Reflect.field(vars, v.name), type: v.type, expr: v.expr.finalize(vars, true) }];
+			
+		var init = new LoopSetup(
+			rename(f.init.def),
+			[for (e in f.init.set) e.finalize(vars, true)]
+		);
+		// init.first = rename(f.init.first);
+		init.definePre(tVar, e);
+		// init.first.push({ name: tVar, type: null, expr: e });
+		// for (e in f.init) 
+		// 	init.push(e.finalize(vars, true));
 		
 		return {
 			init: init,
@@ -299,7 +312,7 @@ class FastLoops {
 		}
 	}
 	
-	static public function iter(e:Expr) {
+	static public function iter(e:Expr):CustomIter {
 		var fast = fastIter(e);
 		return
 			if (fast == null) null;

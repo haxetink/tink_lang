@@ -4,8 +4,10 @@ import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Type;
 import tink.macro.ClassBuilder;
+
 import tink.lang.macros.*;
 import tink.core.Lazy;
+import tink.lang.macros.CustomIter;
 using tink.MacroApi;
 using StringTools;
 using Lambda;
@@ -108,7 +110,8 @@ class LoopSugar {
 	}
 	static function doTransform(it:Expr, expr:Expr) {
 		var loopFlag = temp('loop'),
-			hasJump = false;
+			hasJump = false,
+			as3 = Context.defined('as3');
 		
 		var head = compileHeads(parseHead(it)),
 			body = expr.transform(function (e:Expr) 
@@ -116,41 +119,50 @@ class LoopSugar {
 					switch (e.expr) {
 						case EBreak:
 							hasJump = true;
-							macro {
-								$i{loopFlag} = false;
-								continue;
-							};
+							if (as3) 
+								macro return;
+							else
+								macro {
+									$i{loopFlag} = false;
+									continue;
+								};
 						case EContinue:
 							hasJump = true;
 							e;
 						default: e;
 					}
 			);
-		return 
-			if (hasJump) 
-				head.init.concat([
-					loopFlag.define(macro true),
-						EWhile(
-							OpBoolAnd.make(loopFlag.resolve(), head.condition),
-							head.beforeBody.concat([
-							EWhile(
-								if (Context.defined('java')) 
-									macro Std.random(0) < 0
-								else
-									macro false,
-								body,
-								false
-							).at()]).toBlock(),
-							true
-						).at()
-				]).toBlock();
-			else head.init.concat([
+		function noJump()
+			return
+				head.init.toExprs().concat([
 					EWhile(
 						head.condition,
-						head.beforeBody.concat([body]).toBlock(),
+						head.beforeBody.toExprs().concat([body]).toBlock(),
 						true
 					).at()
 				]).toBlock();
+		return 
+			if (hasJump) 
+				if (as3)
+					macro (function () ${noJump()})();
+				else
+					head.init.toExprs().concat([
+						loopFlag.define(macro true),
+							EWhile(
+								OpBoolAnd.make(loopFlag.resolve(), head.condition),
+								head.beforeBody.toExprs().concat([
+								EWhile(//TODO: find out why I added the inner loop. All side effects should have been caused by beforeBody
+									if (Context.defined('java')) 
+										macro Std.random(0) < 0
+									else
+										macro false,
+									body,
+									false
+								).at()]).toBlock(),
+								true
+							).at()
+					]).toBlock();
+			else noJump();
 	}	
 	
 	static public function temp(name:String) 
@@ -187,8 +199,8 @@ class LoopSugar {
 						v.assign(to);
 				}
 	}
-	static function makeCompiledHead(v:LoopVar, init:Array<Expr>, hasNext:Expr, next:Expr, fallback:Null<Expr>, hasMandatory:Bool):CompiledHead {
-		var beforeBody = [];
+	static function makeCompiledHead(v:LoopVar, init:LoopSetup, hasNext:Expr, next:Expr, fallback:Null<Expr>, hasMandatory:Bool):CompiledHead {
+		var beforeBody = new LoopSetup();
 		if (fallback != null) {
 			if (hasMandatory) {
 				next = hasNext.cond(next, fallback);
@@ -196,14 +208,15 @@ class LoopSugar {
 			}
 			else {
 				var flag = temp('cond');
-				init.push(flag.define(macro true));
-				beforeBody.push(flag.resolve().cond(flag.resolve().assign(hasNext)));
+				init.define(flag, macro true);
+				beforeBody.set.push(macro @:pos(hasNext.pos) if ($i{flag}) $i{flag} = $hasNext);
 				hasNext = flag.resolve();
 				next = flag.resolve().cond(next, fallback);							
 			}
 		}
-		beforeBody.push(v.name.define(v.t));
-		beforeBody.push(doInit(v.name.resolve(), next));
+		beforeBody.define(v.name, v.t);
+		beforeBody.set.push(doInit(v.name.resolve(), next));
+		
 		return {
 			init: init,
 			beforeBody: beforeBody,
@@ -221,12 +234,12 @@ class LoopSugar {
 				default: false;
 			}
 	
-	static function standardIter(e:Expr) {
+	static function standardIter(e:Expr):CustomIter {
 		var target = temp('target');
 		var targetExpr = target.resolve(e.pos);
 		
 		return {
-			init: [target.define(makeIterator(e), e.pos)], 
+			init: new LoopSetup().define(target, makeIterator(e)),
 			hasNext: macro $targetExpr.hasNext(), 
 			next: macro $targetExpr.next()
 		}
@@ -238,31 +251,8 @@ class LoopSugar {
 			else ret;
 	}
 	static var NOP = [].toBlock();
-	static function lazily(f:Void->CompiledHead):CompiledHead {
-		var l = Lazy.ofFunc(f);
-		
-		function map(h:CompiledHead->Expr):Expr 
-			return (function () return h(l)).bounce();
-		
-		function getNth(of, n)
-			return
-				if (of[n] == null) NOP;
-				else of[n];
-		
-		function getNthInit(n) 
-			return map(function (h) return getNth(h.init, n));
-			
-		function getNthStep(n)
-			return map(function (h) return getNth(h.beforeBody, n));
-			
-		return {
-			init: [for (i in 0...5) getNthInit(i)],
-			beforeBody: [for (i in 0...5) getNthStep(i)],
-			condition: map(function (h) return h.condition)
-		}
-	}
 	static function compileHead(head:LoopHead, hasMandatory:Bool):CompiledHead {
-		inline function make(init:Array<Expr>, hasNext:Expr, next:Expr)
+		inline function make(init:LoopSetup, hasNext:Expr, next:Expr)
 			return makeCompiledHead(
 				head.v, 
 				init,
@@ -275,77 +265,73 @@ class LoopSugar {
 		return
 			switch (head.target) {
 				case Any(e):
-					lazily(function () return {
-						var parts = getIterParts(e);
-						head.v.t = e.getIterType().sure().toComplex();
-						make(parts.init, parts.hasNext, parts.next);
-					});
+					var parts = getIterParts(e);
+					head.v.t = e.getIterType().sure().toComplex();
+					make(parts.init, parts.hasNext, parts.next);
 				case Numeric(start, end, step, up): //TODO: factor out this code
-					lazily(function () return { 
-						var intLoop = step.is(macro : Int);
-						if (intLoop)
-							for (e in [start, end])
-								if (!e.is(macro : Int))
-									e.reject('should be Int');
-									
-						var counterName = temp('counter');						
-						var counter = counterName.resolve(),
-							init = [];
-							
-						function mk(e:Expr, name:String) 
-							return
-								if (isConstNum(e)) e;
-								else {
-									name = temp(name);
-									init.push(name.define(e, intLoop ? macro : Int : macro : Float, e.pos));
-									name.resolve(e.pos);
-								}
+					var intLoop = step.is(macro : Int);
+					if (intLoop)
+						for (e in [start, end])
+							if (!e.is(macro : Int))
+								e.reject('should be Int');
+								
+					var counterName = temp('counter');						
+					var counter = counterName.resolve(),
+						init = new LoopSetup();
 						
-						step = mk(step, 'step');
-						
-						if (intLoop) {
-							var counterInit = 
-								if (up) {
-									end = mk(macro $end - $step, 'end');
-									macro $start - $step;
-								}
-								else {
-									end = mk(end, 'end');
-									if (step.getInt().equals(1)) start;
-									else macro Math.ceil(($start - $end) / $step) * $step + $end;//this should be expressed with % for faster evaluation
-								}
-							init.push(counterName.define(counterInit));
-							
-							make(
-								init,
-								(up ? OpLt : OpGt).make(counter, end),
-								if (up)
-									macro $counter += $step
-								else
-									macro $counter -= $step
-							);			
-						}
-						else {
-							var counterEndName = temp('counterEnd');
-							var counterEnd = counterEndName.resolve();
-							
+					function mk(e:Expr, name:String) 
+						return
+							if (isConstNum(e)) e;
+							else {
+								name = temp(name);
+								init.define(name, intLoop ? macro : Int : macro : Float, e);
+								name.resolve(e.pos);
+							}
+					
+					step = mk(step, 'step');
+					
+					if (intLoop) {
+						var counterInit = 
 							if (up) {
-								start = mk(start, 'start');
-								
-								init.push(counterName.define(macro 0));
-								init.push(counterEndName.define(macro Math.ceil(($end - $start) / $step)));
-								
-								make(init, OpLt.make(counter, counterEnd), macro $counter++ * $step + $start);
+								end = mk(macro $end - $step, 'end');
+								macro $start - $step;
 							}
 							else {
 								end = mk(end, 'end');
-								
-								init.push(counterName.define(macro Math.ceil(($start - $end) / $step) - 1));
-								
-								make(init, OpGte.make(counter, macro 0), macro $counter-- * $step + $end);
+								if (step.getInt().equals(1)) start;
+								else macro Math.ceil(($start - $end) / $step) * $step + $end;//this should be expressed with % for faster evaluation
 							}
+						init.define(counterName, counterInit);
+						
+						make(
+							init,
+							(up ? OpLt : OpGt).make(counter, end),
+							if (up)
+								macro $counter += $step
+							else
+								macro $counter -= $step
+						);			
+					}
+					else {
+						var counterEndName = temp('counterEnd');
+						var counterEnd = counterEndName.resolve();
+						
+						if (up) {
+							start = mk(start, 'start');
+							
+							init.define(counterName, macro 0);
+							init.define(counterEndName, macro Math.ceil(($end - $start) / $step));
+							
+							make(init, OpLt.make(counter, counterEnd), macro $counter++ * $step + $start);
 						}
-					});
+						else {
+							end = mk(end, 'end');
+							
+							init.define(counterName, macro Math.ceil(($start - $end) / $step) - 1);
+							
+							make(init, OpGte.make(counter, macro 0), macro $counter-- * $step + $end);
+						}
+					}
 			}
 	}
 	static function compileHeads(heads:Array<LoopHead>):CompiledHead {
@@ -357,8 +343,8 @@ class LoopSugar {
 			}
 			
 		var condition = hasMandatory.toExpr(),
-			init = [],
-			beforeBody = [];
+			init = new LoopSetup(),
+			beforeBody = new LoopSetup();
 			
 		for (head in heads) {
 			var c = compileHead(head, hasMandatory);
@@ -374,7 +360,7 @@ class LoopSugar {
 				condition = OpBoolOr.make(condition, c.condition);
 		}
 		if (!hasMandatory) {
-			beforeBody.push(macro if (!$condition) break);
+			beforeBody.set.push(macro if (!$condition) break);
 			condition = macro true;
 		}
 		return {
@@ -463,7 +449,9 @@ class LoopSugar {
 		return
 			switch e {
 				case macro for ([$a{its}]) $body:
-					doTransform(its.toArray(), body);
+					e.bounceExpr(function (_)
+						return doTransform(its.toArray(), body)
+					);
 				default: e;
 			}
 
@@ -478,8 +466,8 @@ class LoopSugar {
 }
 
 typedef CompiledHead = {
-	init: Array<Expr>,
-	beforeBody: Array<Expr>,
+	init: LoopSetup,
+	beforeBody: LoopSetup,
 	condition: Expr
 }
 typedef Loop = {

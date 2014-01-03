@@ -3,6 +3,7 @@ package tink.lang.macros;
 import haxe.macro.Expr;
 import tink.macro.*;
 import tink.core.*;
+
 using tink.MacroApi;
 
 class Dispatch {
@@ -21,6 +22,7 @@ class Dispatch {
 		make('signal'),
 		make('future')
 	];
+	
 	static public function members(ctx:ClassBuilder) {
 		for (type in types) {
 			var make = type.b;
@@ -52,13 +54,16 @@ class Dispatch {
 				}
 		}
 	}	
+	
 	static public function normalize(e:Expr)
 		return switch e {
 			case macro @until($a{args}) $handler:
 				macro @:pos(e.pos) @when($a{args}) $handler;
 			default: e;	
 		}
+	
 	static var DISPATCHER = macro tink.lang.helpers.StringDispatcher;
+	
 	static public function on(e:Expr) 
 		return
 			switch e {
@@ -71,16 +76,15 @@ class Dispatch {
 								,macro $dispatcher[@capture $event]:
 								//TODO: allow for Iterable<String>
 								macro @:pos(arg.pos) 
-									$DISPATCHER.capture($DISPATCHER.promote($dispatcher), $event, ___h);
+									$DISPATCHER.capture($DISPATCHER.promote($dispatcher), $event, __h);
 							case macro $dispatcher[$event]:
 								macro @:pos(arg.pos) 
-									$DISPATCHER.promote($dispatcher).watch($event, ___h);
+									$DISPATCHER.promote($dispatcher).watch($event, __h);
 							default:
-								macro @:pos(arg.pos) $arg.when(___h);
-								//macro @:pos(arg.pos) tink.core.Callback.target($arg)(___h);
+								macro @:pos(arg.pos) $arg.when(__h);
 						}
 					].toArray();
-					macro (function (___h) return $ret)($handler);//TODO: SIAF only generated because otherwise inference order will cause compiler error
+					macro (function (__h) return $ret)($handler);//TODO: SIAF only generated because otherwise inference order will cause compiler error
 				default: e;
 			}
 			
@@ -88,7 +92,7 @@ class Dispatch {
 		return switch e {
 			case macro @with($target) $handle:
 				function transform(e:Expr) return switch e {
-					case macro @with($_) $_: e;
+					case macro @with($_) $_: e;//should not occur in fact
 					case macro @when($a{args}) $handler:
 						args = 
 							[for (arg in args) 

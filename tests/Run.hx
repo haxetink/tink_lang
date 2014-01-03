@@ -10,10 +10,11 @@ class Run {
 		new ClsTest(),
 		new TestFutureDecl(),
 		new TestSignalDecl(),
-		new TestFastLoops(),
+		new TestLoops(),
 		new TestOptions(),
 		new TestPartial(),
 		new TestShortLambda(),
+		new TestDispatch()
 	];
 	
 	static function main() {

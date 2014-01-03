@@ -43,9 +43,9 @@
 -cmd java -jar bin/java/java.jar
 
 #cpp
---next
--cpp bin/cpp
--cmd bin/cpp/Run
+#--next
+#-cpp bin/cpp
+#-cmd bin/cpp/Run
 
 #as3
 --next

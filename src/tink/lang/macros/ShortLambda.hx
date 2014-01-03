@@ -38,7 +38,7 @@ class ShortLambda {
 				default: arg.pos.makeFailure('Unsuitable switch argument');
 			}
 	
-	static function returnIfNotVoid(old:Expr) //pattern matcher seems to mingle the expression beyond recognition
+	static function returnIfNotVoid(old:Expr)
 		return
 			if (old.typeof().sure().getID() == 'Void') old;
 			else
@@ -53,18 +53,32 @@ class ShortLambda {
 				e.getIdent().sure().toArg()
 		];
 	
+	static function parseSwitch(arg, cases, edef, e, ?isFunction):Expr
+		return
+			switch parseArg(arg) {
+				case Success(count):
+					var tmps = [for (i in 0...count) MacroApi.tempName().resolve()];
+					var body = ESwitch(tmps.toArray(), cases, edef).at(e.pos);
+					process(
+						if (isFunction == null)
+							macro @:pos(e.pos) [$a{tmps}] => $body
+						else if (isFunction)
+							macro @:pos(e.pos) @f($a{tmps}) $body
+						else
+							macro @:pos(e.pos) @do($a{tmps}) $body
+					);
+				default: e;
+			}
+	
 	static public function process(e:Expr) 
 		return
 			switch e {
-				case { expr:ESwitch(arg, cases, edef), pos:pos }:					
-					switch parseArg(arg) {
-						case Success(count):
-							var tmps = [for (i in 0...count) MacroApi.tempName().resolve()];
-							process(
-								macro @:pos(pos) [$a{tmps}] => ${ESwitch(tmps.toArray(), cases, edef).at(pos)}
-							);
-						default: e;
-					}
+				case { expr:ESwitch(arg, cases, edef) }:	
+					parseSwitch(arg, cases, edef, e);
+				case macro @do ${{ expr:ESwitch(arg, cases, edef) }}:	
+					parseSwitch(arg, cases, edef, e, false);
+				case macro @f ${{ expr:ESwitch(arg, cases, edef) }}:	
+					parseSwitch(arg, cases, edef, e, true);
 				case macro [$a{args}] => $body:
 					arrow(getIdents(args), body);
 				case macro $i{arg} => $body:

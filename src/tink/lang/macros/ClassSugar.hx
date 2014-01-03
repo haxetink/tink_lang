@@ -81,12 +81,12 @@ class ClassSugar {
 			simpleSugar(LoopSugar.firstPass),
 			
 			simpleSugar(ShortLambda.protectMaps),
-			simpleSugar(ShortLambda.process),
+			simpleSugar(ShortLambda.process, true),
 			simpleSugar(ShortLambda.postfix),
 			
-			simpleSugar(Dispatch.normalize),
-			simpleSugar(Dispatch.with),
-			simpleSugar(Dispatch.on),
+			// simpleSugar(Dispatch.normalize),
+			// simpleSugar(Dispatch.with),
+			// simpleSugar(Dispatch.on),
 			
 			simpleSugar(function (e) return switch e { 
 				case (macro $val || if ($x) $def else $none)

@@ -9,9 +9,12 @@ class Loops {
 	macro static public function run() {
 		var offset = macro haxe.Timer.delay;
 		
-		if (!offset.typeof().isSuccess())
+		if (!offset.typeof().isSuccess() || Context.defined('java'))
 			offset = macro function (f, _) f();
-			
+		var factor = 
+			if (Context.defined('loop_factor'))
+				Std.parseInt(Context.definedValue('loop_factor'));
+				else 1;
 		function makeClass() {
 			var ret = macro class {
 				var a:Array<String>;
@@ -45,12 +48,12 @@ class Loops {
 				});
 			}
 			
-			loop(100000, 'array', macro a);
-			loop(50000, 'list', macro l);
-			loop(10000, 'string map', macro sm);
-			loop(10000, 'string map keys', macro sm.keys());
-			loop(10000, 'int map', macro im);
-			loop(10000, 'int map keys', macro im.keys());
+			loop(factor * 10000, 'array', macro a);
+			loop(factor * 5000, 'list', macro l);
+			loop(factor * 1000, 'string map', macro sm);
+			loop(factor * 1000, 'string map keys', macro sm.keys());
+			loop(factor * 1000, 'int map', macro im);
+			loop(factor * 1000, 'int map keys', macro im.keys());
 			
 			var calls = [for (f in fieldNames) 
 				macro tink.core.Future.async(function (cb) $offset(function () cb($i{f}()), 1))

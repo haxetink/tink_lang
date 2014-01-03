@@ -756,7 +756,6 @@ Platform|&nbsp;|array|list|string map|string map keys|int map|int map keys
 interp|tink|18.59|19.68|65.59|170.39|67.10|62.50
 &nbsp;|plain|35.78|47.80|125.00|287.50|125.00|126.59
 &nbsp;|speedup|1.92|2.42|1.90|1.68|1.86|2.02
-Neko|tink|1.44|0.41|6.69|34.70|6.10|6.09
 &nbsp;|plain|6.00|5.58|17.59|41.40|17.69|17.70
 &nbsp;|speedup|4.17|13.28|2.62|1.19|2.90|2.90
 PHP|tink|10.65|14.89|15.33|17.24|15.20|17.42
@@ -774,6 +773,9 @@ Firefox|tink|0.13|0.44|11.50|4.49|11.10|11.29
 Flash|tink|0.31|0.90|16.89|16.90|11.19|8.80
 &nbsp;|plain|0.58|39.00|62.19|35.20|53.29|24.59
 &nbsp;|speedup|1.84|43.33|3.68|2.08|4.75|2.79
+Java|tink|0.28|1.31|1.54|0.69|2.63|1.61
+&nbsp;|plain|0.27|13.79|20.19|21.20|17.93|19.17
+&nbsp;|speedup|0.98|10.51|13.11|30.28|6.82|11.90
 
 
 The generated code is a little more bulky, especially since tink tries hard not to generate conflicts with user variables. Because of that bulkiness and potential incompatibility with plain loops, tink will leave normal loops alone.
@@ -969,7 +971,7 @@ Similarly to [do procedures](#do-procedure), `@f` will create a function:
 
 ### Matchers
 
-Both [do procedures](#do-procedure) and [f functions](#f-function) can be written as "matchers", where the arguments are directly piped into a switch statement and therefore needn't be named (since you will capture the values you need in the respective case statements).
+Another kind of short lambdas are "matchers", where the arguments are directly piped into a switch statement and therefore needn't be named (since you will capture the values you need in the respective case statements).
 
 ```
 @do switch _ {
@@ -993,14 +995,16 @@ function (tmp) return switch tmp {
 }
 ```
 
+#### Multi argument matchers
+
 If you expect more than one argument, you can use `_2`, `_3` and so on or `[_,_]`, `[_, _, _]` and so on:
 
 ```
-switch _2 {
+@do switch _2 {
 	/* cases */
 }
 // or alternatively
-switch [_, _] {
+@do switch [_, _] {
 	/* cases */
 }
 ```
@@ -1021,6 +1025,30 @@ someOp() => switch _ {
 	case Failure(error):
 }
 ```
+
+#### Implicit matchers
+
+You can also omit the `@do` or `@f` prefix and [tink will determine](#type-aware-syntax) whether you could be meaning a procedure or a function. If the whole switch-statement seems to yield `Void`, then tink will assume you meant a procedure. In all other cases, the statement will be treated as a function.
+
+Often, this is the preferable syntax. However, you may inadvertedly seem to be returning something as in this example:
+
+```
+using Lambda;
+enum Action {
+	Add(s:String);
+	Remove(s:String);
+}
+
+var elements = ['apple', 'banana'];
+var updates = [Add('kiwi'), Remove('banana')];
+
+updates.iter() => switch _ {
+	case Add(s): elements.push(s);
+	case Remove(s): elements.remove(s);
+};
+```
+
+In this case, both branches return something (since `push` returns the new length of the array and `remove` returns whether the element was found to start with). Obviously, the intent of the code is not to return this information, but rather to cause some side effects. But that's not possible to determine. Therefore you can use `@do` to express that intention explicitly. The `@f` prefix is only supported for symmetry.
 
 ## Default
 

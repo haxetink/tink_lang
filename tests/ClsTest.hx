@@ -62,6 +62,7 @@ class ClsTest extends TestCase {
 		assertEquals(5, b.f);
 		                
 		assertEquals(6, b.g);
+		return;
 		b.g = 3;        
 		assertEquals(6, b.g);
 		                
