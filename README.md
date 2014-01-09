@@ -756,6 +756,7 @@ Platform|&nbsp;|array|list|string map|string map keys|int map|int map keys
 interp|tink|18.59|19.68|65.59|170.39|67.10|62.50
 &nbsp;|plain|35.78|47.80|125.00|287.50|125.00|126.59
 &nbsp;|speedup|1.92|2.42|1.90|1.68|1.86|2.02
+Neko|tink|1.44|0.41|6.69|34.70|6.10|6.09
 &nbsp;|plain|6.00|5.58|17.59|41.40|17.69|17.70
 &nbsp;|speedup|4.17|13.28|2.62|1.19|2.90|2.90
 PHP|tink|10.65|14.89|15.33|17.24|15.20|17.42
