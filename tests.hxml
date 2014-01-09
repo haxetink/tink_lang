@@ -5,7 +5,7 @@
 -cp tests
 #-lib tink_macro
 -dce full
--main Run
+-main RunTests
 --each
 
 #macro

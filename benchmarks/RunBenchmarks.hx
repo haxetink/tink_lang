@@ -1,6 +1,6 @@
 package ;
 
-class Run {
+class RunBenchmarks {
 	
 	static function time(result) 
 		return round(result.time);

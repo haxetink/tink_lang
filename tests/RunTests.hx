@@ -4,7 +4,7 @@ import haxe.unit.TestCase;
 import haxe.unit.TestRunner;
 import tink.lang.helpers.StringDispatcher;
 
-class Run {
+class RunTests {
 	static var tests:Array<TestCase> = [
 		new TestInit(),
 		new ClsTest(),

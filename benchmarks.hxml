@@ -6,7 +6,7 @@
 -D force_tink_loops
 #-lib tink_macro
 -dce full
--main Run
+-main RunBenchmarks
 --each
 
 #macro
