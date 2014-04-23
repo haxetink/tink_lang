@@ -1,5 +1,7 @@
 package ;
 
+import haxe.ds.Option;
+
 class RunBenchmarks {
 	
 	static function time(result) 
@@ -17,6 +19,7 @@ class RunBenchmarks {
 	
 		
 	static function main() {
+		Foo.loop();
 		#if flash9 
 			var tf = flash.Boot.getTrace();
 			tf.selectable = true;
@@ -39,5 +42,13 @@ class RunBenchmarks {
 			log('&nbsp;|speedup|' + [for (i in 0...data.plain.length) round(data.plain[i].time / data.tink[i].time)].join('|'));
 			log('');
 		});
+	}
+}
+
+class Foo implements tink.Lang {
+	static public function loop() {
+		function foo(x, y, z) {};
+		trace(macro foo() => 5 => 6);
+		// trace(4) => 5 => 6;
 	}
 }

@@ -4,4 +4,5 @@ package tink;
 	@:autoBuild(tink.lang.macros.ClassSugar.process()) 
 #end
 interface Lang {
+	
 }

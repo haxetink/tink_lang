@@ -15,7 +15,7 @@ Generally you should not use identifiers starting with `__tink_` to avoid confli
 
 ### Overview
 
-- [Declaration Sugar](#declaration-sugar)
+- [Declaration Sugar](#declaration-sugar) 
  - [Partial implementation](#partial-implementation)
   - [On demand implementation](#on-demand-implementation)
   - [Default initialization](#default-initialization)
@@ -30,9 +30,13 @@ Generally you should not use identifiers starting with `__tink_` to avoid confli
 - [Implementation Sugar](#implementation-sugar)
  - [Trailing arguments](#trailing-arguments)
  - [Short lambdas](#short-lambdas)
+  - f
+  - g
+  - g
+  - h
  - [Extended loops](#extended-loops)
   - [Extended comprehensions](#extended-comprehensions)
- - [Fallback](#fallback)
+  - [Fallback](#fallback)
  - [Trailing argument](#trailing-argument)
 
 # Declaration Sugar
@@ -810,7 +814,7 @@ trace([for (x in x)
 ]);
 ```
 
-With `-D force_tink_loops` this traces `"[1, 2]"`, with Haxe it doesn't compile.
+With `-D force_tink_loops` this traces `[1, 2]`, with Haxe it doesn't compile or yields `[1, null, 2]` (depending on minor version).
 
 Example with arbitrary `if`:
 
@@ -821,14 +825,19 @@ enum Rescued {
 	Child(person:Person);
 }
 
-var crew:Array<Person> = [/* put some people here */];
+var crew:Array<Person> = [
+	{ name : 'Joe', age: 25, male: true }, 
+	{ name : 'Jane', age: 24, male: false }, 
+	{ name: 'Timmy', age: 8, male: true }
+];
+
 var womenAndChildren = [for (person in crew)
 	if (person.age < 18) Child(person)
 	else if (!person.male) Woman(person)
 ];
 ```
 
-With plain Haxe this will not compile.
+With plain Haxe this will not compile saying "Void should be Rescued".
 
 #### Alternative output
 
@@ -919,7 +928,7 @@ sys.db.Mysql.connect() => {
 
 ## Short lambdas
 
-Tink supports a multitude of notations for short lambdas. Generally, two different kinds of functions are distinguished: those that return values and those that don't. The distinction is necessary since Haxe no longer allows values of type `Void`. Tink tries to distinguish them implicitly none the less. We'll be calling them functions and procedures respectively (as is the case in Pascal).
+Tink supports a multitude of notations for short lambdas. Generally, two different kinds of functions are distinguished: those that return values and those that don't. The distinction is necessary since Haxe no longer allows values of type `Void`. We'll be calling them functions and procedures respectively (as is the case in Pascal).
 
 Currently, Haxe does not support short lambdas, the rationale being that they are harder to read to new comers. This concern does have its value. Use this notation to increase readability and not to obfuscate code for the sake of saving a few key strokes. As the name would suggest, short lambdas should be *short*, the motivation here being to write function inline with minimal noise, which by nature is not compatible with complex bodies. If you have some complex, **give it a name** (you can always use a nested function and declare it `inline`).
 
@@ -931,6 +940,8 @@ The notation looks like `[...args] => body`, with a shortcut for exactly one arg
 * `[x] => 2 * x` becomes `function (x) return 2 * x`
 * `x => 2 * x` (special case) becomes `function (x) return 2 * x`
 * `[x, y] => x + y` becomes `function (x, y) return x + y`
+
+Arrow lambdas are always funtions, since the arrow is conventionally used to represent a mapping (as in map literals, map comprehensions and extractors). A procedure does not define a mapping.
 
 ### Do procedures
 

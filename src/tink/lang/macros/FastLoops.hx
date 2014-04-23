@@ -209,18 +209,18 @@ class FastLoops {
 				}
 			);
 		}
-		
+		var helpers = macro tink.lang.helpers.LoopHelpers;
 		if (Context.defined('js')) {
 			addRules(
 				'haxe.ds.IntMap',
 				macro: {
 					@:tink_for({ 
-						var i = 0, a = LoopHelpers.ik(this), l, h = @:privateAccess this.h;
+						var i = 0, a = $helpers.ik(this), l, h = @:privateAccess this.h;
 						l = a.length;
 					}, i < l, h[cast a[i++]])
 					function iterator();
 					@:tink_for({ 
-						var i = 0, a = LoopHelpers.ik(this), l;
+						var i = 0, a = $helpers.ik(this), l;
 						l = a.length;
 					}, i < l, a[i++])
 					function keys();
@@ -230,12 +230,12 @@ class FastLoops {
 				'haxe.ds.StringMap',
 				macro: {
 					@:tink_for({ 
-						var i = 0, a = LoopHelpers.skd(this), l, h = @:privateAccess this.h;
+						var i = 0, a = $helpers.skd(this), l, h = @:privateAccess this.h;
 						l = a.length;
 					}, i < l, h[cast a[i++]])
 					function iterator();
 					@:tink_for({ 
-						var i = 0, a = LoopHelpers.sk(this), l;
+						var i = 0, a = $helpers.sk(this), l;
 						l = a.length;
 					}, i < l, a[i++])
 					function keys();

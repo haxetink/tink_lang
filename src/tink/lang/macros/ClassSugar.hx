@@ -54,15 +54,15 @@ class ClassSugar {
 		static public var PLUGINS = [
 			FuncOptions.process,
 			Dispatch.members,
+			PropBuilder.process,
 			Init.process,
 			Forward.process,
-			PropBuilder.process,
 			
 			simpleSugar(function (e) return switch e {
 				case macro @in($delta) $handler:
 					return ECheckType(
 						(macro @:pos(e.pos) haxe.Timer.delay($handler, Std.int($delta * 1000)).stop),
-						macro : tink.core.types.Callback.CallbackLink
+						macro : tink.core.Callback.CallbackLink
 					).at(e.pos);
 					
 				case macro @every($delta) $handler:
@@ -72,7 +72,7 @@ class ClassSugar {
 							t.run = $handler;
 							t.stop;
 						}),
-						macro : tink.core.types.Callback.CallbackLink
+						macro : tink.core.Callback.CallbackLink
 					).at(e.pos);		
 				default: e;
 			}),

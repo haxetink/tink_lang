@@ -1,6 +1,7 @@
 package tink.lang.macros;
 
 import haxe.macro.Expr;
+import haxe.ds.Option;
 using tink.MacroApi;
 
 class ShortLambda {
@@ -29,13 +30,15 @@ class ShortLambda {
 	static function parseArg(arg:Expr) 
 		return
 			switch arg {
-				case macro _: Success(1);
+				case macro _: Success(None);
 				case macro $i{v} if (v.charAt(0) == '_' && v.charCodeAt(1) <= '9'.code):
-					Success(Std.parseInt(v.substr(1)));
-				case macro []: arg.reject('At least one expression needed');
+					Success(Some(Std.parseInt(v.substr(1))));
+				case macro []: 
+					arg.reject('At least one expression needed');
 				case macro [$a{args}] if (Lambda.foreach(args, Exprs.isWildcard)):
-					Success(args.length);
-				default: arg.pos.makeFailure('Unsuitable switch argument');
+					Success(Some(args.length));
+				default: 
+					arg.pos.makeFailure('Unsuitable switch argument');
 			}
 	
 	static function returnIfNotVoid(old:Expr)
@@ -56,9 +59,17 @@ class ShortLambda {
 	static function parseSwitch(arg, cases, edef, e, ?isFunction):Expr
 		return
 			switch parseArg(arg) {
-				case Success(count):
+				case Success(o):
+					var tuple = false;
+					var count = 1;
+					switch o {
+						case Some(c):
+							tuple = true;
+							count = c;
+						default:
+					}
 					var tmps = [for (i in 0...count) MacroApi.tempName().resolve()];
-					var body = ESwitch(tmps.toArray(), cases, edef).at(e.pos);
+					var body = ESwitch(tuple ? tmps.toArray() : tmps[0], cases, edef).at(e.pos);
 					process(
 						if (isFunction == null)
 							macro @:pos(e.pos) [$a{tmps}] => $body

@@ -8,7 +8,7 @@
 	"releasenote": "Overall refactoring.",
 	"contributors": ["back2dos"],
 	"dependencies": {
-		"tink_macro": "0.0.0-beta"
+		"tink_macro": "0.2.1-beta"
 	},
 	"classPath": "src" 
 }

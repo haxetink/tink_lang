@@ -8,6 +8,7 @@ using tink.MacroApi;
 class PropBuilder {
 	static public inline var FULL = ':prop';
 	static public inline var READ = ':read';
+	static public inline var CALC = ':calc';
 	
 	static public function process(ctx:ClassBuilder) 
 		new PropBuilder(ctx).processMembers();
@@ -46,12 +47,24 @@ class PropBuilder {
 	inline function add(member, ?front)
 		return ctx.addMember(member, front);
 	
-	
 	function processMembers() {
 		for (member in ctx)
 			switch (member.kind) {
 				case FVar(t, e):					
 					var name = member.name;
+					
+					switch member.extractMeta(CALC) {
+						case Success(tag):
+							if (e == null)
+								member.pos.error('no expression given');
+							if (t == null)
+								t = e.pos.makeBlankType();
+							member.kind = FProp('get', 'never', t, null);
+							member.publish();
+							add(Member.getter(name, e, t));
+							continue;
+						default: 
+					}
 					
 					switch member.extractMeta(READ) {
 						case Success(tag):
