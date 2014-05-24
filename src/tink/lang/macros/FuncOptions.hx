@@ -35,7 +35,7 @@ class FuncOptions {
 		for (arg in args)
 			if (arg.value != null) 
 				switch arg.value.expr {
-					case EArrayDecl(parts):
+					case EObjectDecl(parts):
 						var opt = true,
 							fields = new Array<Field>(),
 							direct = arg.name == '_';
@@ -43,7 +43,10 @@ class FuncOptions {
 						if (direct)	
 							arg.name = MacroApi.tempName();
 							
-						function add(pos, name, type, init) {
+						function add(pos, name, init:Expr) {
+							if (init.isWildcard())
+								init = null;
+								
 							if (init == null) 
 								opt = false;
 								
@@ -58,12 +61,16 @@ class FuncOptions {
 								else 
 									prepend(macro @:pos(pos) if ($i{arg.name}.$name == null) $i{arg.name}.$name = ${init});
 								
-							if (type == null)
-								type = 
-									if (init != null)
-										init.typeof().map(Types.toComplex.bind(_, { direct: true })).orUse(pos.makeBlankType());
-									else
+							var type = 
+								switch init {
+									case null: 
 										pos.makeBlankType();
+									case macro ($_ : $t):
+										t;
+									default:
+										init.typeof().map(Types.toComplex.bind(_, { direct: true })).orUse(pos.makeBlankType());
+								}
+									
 										
 							type = macro : Null<$type>;
 							fields.push({
@@ -74,15 +81,8 @@ class FuncOptions {
 							});
 						}
 						parts.reverse();
-						for (p in parts)
-							switch p {
-								case macro var $name:$type = $init:
-									add(p.pos, name, type, init);
-								case macro $i{name} = $init:
-									add(p.pos, name, null, init);
-								default:
-									p.reject();
-							}
+						for (f in parts)
+							add(f.expr.pos, f.field, f.expr);
 							
 						if (opt) {
 							prepend(macro if ($i{arg.name} == null) $i{arg.name} = {});

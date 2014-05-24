@@ -6,10 +6,16 @@ import tink.macro.*;
 using tink.MacroApi;
 
 class PropBuilder {
-	static public inline var FULL = ':prop';
+	static public inline var PROP = ':prop';
 	static public inline var READ = ':read';
 	static public inline var CALC = ':calc';
 	
+	static var aliases = [
+		':property' => PROP,
+		':readonly' => READ,
+		':calculated' => CALC,
+	];
+		
 	static public function process(ctx:ClassBuilder) 
 		new PropBuilder(ctx).processMembers();
 	
@@ -53,6 +59,14 @@ class PropBuilder {
 				case FVar(t, e):					
 					var name = member.name;
 					
+					switch (member : Field).meta {
+						case null:
+						case tags:
+							for (m in tags)
+								if (aliases.exists(m.name))
+									m.name = aliases[m.name];
+					}
+					
 					switch member.extractMeta(CALC) {
 						case Success(tag):
 							if (e == null)
@@ -68,9 +82,9 @@ class PropBuilder {
 					
 					switch member.extractMeta(READ) {
 						case Success(tag):
-							switch member.extractMeta(FULL) {
+							switch member.extractMeta(PROP) {
 								case Success(tag): 
-									tag.pos.error('Cannot have both $FULL and $READ');
+									tag.pos.error('Cannot have both $PROP and $READ');
 								default:
 							}
 							var get = 
@@ -80,10 +94,10 @@ class PropBuilder {
 									default: 
 										tag.pos.error('too many arguments');
 								}
-							member.addMeta(FULL, tag.pos, get);
+							member.addMeta(PROP, tag.pos, get);
 						default:
 					}
-					switch member.extractMeta(FULL) {
+					switch member.extractMeta(PROP) {
 						case Success(tag):
 							var getter = null,
 								setter = null,

@@ -8,6 +8,7 @@ import tink.macro.ClassBuilder;
 import tink.lang.macros.*;
 import tink.core.Lazy;
 import tink.lang.macros.CustomIter;
+
 using tink.MacroApi;
 using StringTools;
 using Lambda;
@@ -470,6 +471,7 @@ typedef CompiledHead = {
 	beforeBody: LoopSetup,
 	condition: Expr
 }
+
 typedef Loop = {
 	head: LoopHead,
 	body: Expr

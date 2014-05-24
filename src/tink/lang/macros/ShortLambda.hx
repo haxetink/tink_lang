@@ -31,8 +31,6 @@ class ShortLambda {
 		return
 			switch arg {
 				case macro _: Success(None);
-				case macro $i{v} if (v.charAt(0) == '_' && v.charCodeAt(1) <= '9'.code):
-					Success(Some(Std.parseInt(v.substr(1))));
 				case macro []: 
 					arg.reject('At least one expression needed');
 				case macro [$a{args}] if (Lambda.foreach(args, Exprs.isWildcard)):

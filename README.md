@@ -395,7 +395,7 @@ So here we have a point that is internally represented in polar coordinates, tha
 You can use the following syntax to add "options" to functions:
 
 ```
-function foo(i:Int, j:Int, options = [var x:X = someX, var y:Y = someY, ...]) 
+function foo(i:Int, j:Int, options = { x: someX, y:someY, ...}) 
 	body;
 
 //becomes
@@ -408,31 +408,19 @@ function foo(i:Int, j:Int, ?options:{?x:X, ?y:Y}) {
 }
 ```
 
-Tink will look at the default values you've defined for your arguments and interpret those that are array literals as options, since they aren't allowed in Haxe.
+Tink will look at the default values you've defined for your arguments and interpret those that are object literals as options, since they aren't allowed in Haxe. 
 
-The accepted entries are either variable declarations or assignments where the left side is an identifier. You can choose to not specify the type, e.g. `[var x = someX, ...` or just write `[x = someX, ...`.
-You can also choose not to specify a value for an option. In that case, it will become mandatory and the whole parameter itself will also become mandatory. Example:
-
-```
-function foo(options = [var x:X, var y:Y = someY, ...]) 
-	body;
-
-//becomes
-
-function foo(options:{ x:X, ?y:Y }) {
-	if (options.y == null) options.y = someY;
-	body;
-}
-```
-
-You can specify multiple options if you wish to, although there's no real point in doing that.
+- To have a mandatory option (yeah right), you can use `_`. 
+- To give an option a type, use the ($expr : $type) syntax.
+- If you have a mandatory options, then the whole options object becomes mandatory.
+- You can specify multiple options if you wish to, although there's no real point in doing that.
 
 ### Direct options
 
 If you don't wish to actually have an object holding the options, but rather variables directly, you can use this:
 
 ```
-function bar(_ = [var x:X = someX, var y:Y = someY, ...]) 
+function bar(_ = { x: someX, y:someY, ...}) 
 	body;
 
 //becomes
@@ -444,14 +432,14 @@ function bar(?_:{?x:X,?y:Y}) {
 }
 ```
 
-This comes pretty close to [named parameters](http://en.wikipedia.org/wiki/Named_parameter). Future versions may use inlining to reduce the overhead completely, but currently it seems impossible to trick the compiler's optimizer into removing the allocation.
+This comes pretty close to [named parameters](http://en.wikipedia.org/wiki/Named_parameter). 
 
 ### Sharing options
 
 If you want to share the same options between two functions, you can use the following pattern:
 
 ```
-private function getOptions(?options = [...]) 
+private function getOptions(?options = {...}) 
 	return options;
 
 function foo(?options) {
@@ -1009,12 +997,9 @@ function (tmp) return switch tmp {
 
 #### Multi argument matchers
 
-If you expect more than one argument, you can use `_2`, `_3` and so on or `[_,_]`, `[_, _, _]` and so on:
+If you expect more than one argument, you can use `[_,_]`, `[_, _, _]` and so on:
 
 ```
-@do switch _2 {
-	/* cases */
-}
 // or alternatively
 @do switch [_, _] {
 	/* cases */

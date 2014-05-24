@@ -6,12 +6,12 @@ using Lambda;
 
 private class Dummy implements tink.Lang {
 	public function new() {}
-	public function normal(o1 = [var x = 5, var y = 'bar'], o2 = [var a = o1.x, var b = 7]) {		
+	
+	public function normal(o1 = { x: 5, y: 'bar'}, o2 = { a: o1.x, b: 7}) 
 		return { o1: o1, o2: o2 };
-	}
-	public function direct(_ = [var x = 5, var y = 'bar']) {		
+	
+	public function direct(_ = { x: 5, y: 'bar'}) 
 		return { x: x, y: y };
-	}
 	
 }
 
