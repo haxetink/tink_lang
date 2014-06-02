@@ -8,7 +8,7 @@ package tink.lang.macros;
 	
 	using tink.MacroApi;
 #end
-
+	
 class ClassSugar {
 	macro static public function process():Array<Field> 
 		return 
@@ -18,7 +18,7 @@ class ClassSugar {
 			);
 	
 	#if macro
-		static function simpleSugar(rule:Expr->Expr, ?outsideIn = false) {
+		static public function simpleSugar(rule:Expr->Expr, ?outsideIn = false) {
 			function transform(e:Expr) {
 				return 
 					if (e == null || e.expr == null) e;
@@ -35,7 +35,7 @@ class ClassSugar {
 			return syntax(transform);
 		}
 		
-		static function syntax(rule:Expr->Expr) 
+		static public function syntax(rule:Expr->Expr) 
 			return function (ctx:ClassBuilder) {
 				function transform(f:Function)
 					if (f.expr != null)
@@ -46,58 +46,76 @@ class ClassSugar {
 						case FFun(f): transform(f);
 						case FProp(_, _, _, e), FVar(_, e): 
 							if (e != null)
-								e.expr = rule(e).expr;//RAPTORS
+								e.expr = rule(e).expr;//TODO: it might be better to just create a new kind, rather than modifying the expression in place
 					}
 			}
 		
+		static function shortcuts(e:Expr)
+			return switch e {
+				case macro @until($future) $link:
+					
+					shortcuts(macro @:pos(e.pos) @when($future) ($link : tink.core.Callback.CallbackLink));
+					
+				case macro @when($future) $handler:
+					var any = e.pos.makeBlankType();
+					macro @:pos(e.pos) ($future : tink.core.Future<$any>).handle($handler);
+					
+				case macro @whenever($signal) $handler:
+					var any = e.pos.makeBlankType();
+					macro @:pos(e.pos) ($signal : tink.core.Signal<$any>).handle($handler);
+				
+				case macro @in($delta) $handler:
+				
+					macro @:pos(e.pos) (
+						haxe.Timer.delay($handler, Std.int($delta * 1000)).stop :
+						tink.core.Callback.CallbackLink
+					);
+					
+				case macro @every($delta) $handler:
+				
+					macro @:pos(e.pos) (
+						{
+							var t = new haxe.Timer(Std.int($delta * 1000));
+							t.run = $handler;
+							t.stop;
+						} : tink.core.Callback.CallbackLink
+					);
+				
+				default: e;
+			}
+			
+		static function defaultVal(e:Expr)
+			return switch e { 
+				case (macro $val || if ($x) $def)
+					,(macro $val | if ($x) $def):
+					macro @:pos(e.pos) {
+						var ___val = $val;
+						(___val == $x ? $def : ___val);
+					}
+				default: e;
+			}
+				
 		//TODO: it seems a little monolithic to yank all plugins here
-		static public var PLUGINS = [
+		static var PLUGINS = [
+			simpleSugar(ShortLambda.protectMaps),
+			
 			FuncOptions.process,
 			Dispatch.members,
 			PropBuilder.process,
 			Init.process,
 			Forward.process,
 			
-			simpleSugar(function (e) return switch e {
-				case macro @in($delta) $handler:
-					return ECheckType(
-						(macro @:pos(e.pos) haxe.Timer.delay($handler, Std.int($delta * 1000)).stop),
-						macro : tink.core.Callback.CallbackLink
-					).at(e.pos);
-					
-				case macro @every($delta) $handler:
-					return ECheckType(
-						(macro @:pos(e.pos) {
-							var t = new haxe.Timer(Std.int($delta * 1000));
-							t.run = $handler;
-							t.stop;
-						}),
-						macro : tink.core.Callback.CallbackLink
-					).at(e.pos);		
-				default: e;
-			}),
+			simpleSugar(shortcuts),
 			
 			simpleSugar(LoopSugar.comprehension),
 			simpleSugar(LoopSugar.firstPass),
 			
-			simpleSugar(ShortLambda.protectMaps),
 			simpleSugar(ShortLambda.process, true),
 			simpleSugar(ShortLambda.postfix),
 			
-			// simpleSugar(Dispatch.normalize),
-			// simpleSugar(Dispatch.with),
-			// simpleSugar(Dispatch.on),
-			
-			simpleSugar(function (e) return switch e { 
-				case (macro $val || if ($x) $def else $none)
-					,(macro $val | if ($x) $def else $none) if (none == null):
-					macro @:pos(e.pos) {
-						var ___val = $val;
-						(___val == $x ? $def : ___val);
-					}
-				default: e;
-			}),
+			simpleSugar(defaultVal),
 			PartialImpl.process,
+			
 			simpleSugar(LoopSugar.secondPass),
 		];	
 	#end
