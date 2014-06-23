@@ -1,13 +1,13 @@
-package tink.lang.macros;
+package tink.lang.sugar;
 
 import haxe.macro.Expr;
 import tink.macro.*;
 
 using tink.MacroApi;
 
-class Init {
+class DirectInitialization {
 	static public function process(ctx) 
-		new Init(ctx).processMembers();
+		new DirectInitialization(ctx).processMembers();
 	
 	var ctx:ClassBuilder;
 	function new(ctx) 
@@ -27,12 +27,12 @@ class Init {
 					case FVar(t, e):
 						if (e != null) {
 							member.kind = FVar(t = getType(t, e), null);
-							Init.member(ctx, member, t, e);
+							DirectInitialization.member(ctx, member, t, e);
 						}
 					case FProp(get, set, t, e):
 						if (e != null) {
 							member.kind = FProp(get, set, t = getType(t, e), null);
-							Init.member(ctx, member, t, e);
+							DirectInitialization.member(ctx, member, t, e);
 						}						
 					default:
 				}
@@ -40,7 +40,7 @@ class Init {
 		
 	static public function member(ctx:ClassBuilder, member:Member, t:ComplexType, e:Expr) 
 		if (ctx.target.isInterface) 
-			PartialImpl.setDefault(member, ECheckType(e, t).at(e.pos));
+			PartialImplementation.setDefault(member, ECheckType(e, t).at(e.pos));
 		else 
 			field(ctx.getConstructor(), member.name, t, e);
 	

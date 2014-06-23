@@ -1,9 +1,9 @@
-package tink.lang.macros;
+package tink.lang.sugar;
 
 import haxe.macro.Expr;
 using tink.MacroApi;
 
-typedef CustomIter = {
+typedef CustomIterator = {
 	init: LoopSetup,
 	hasNext: Expr,
 	next: Expr

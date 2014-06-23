@@ -1,4 +1,4 @@
-package tink.lang.macros;
+package tink.lang.sugar;
 
 import haxe.macro.Type;
 import haxe.macro.Expr;
@@ -51,7 +51,7 @@ private abstract Fieldish({ set: String->Bool->Expr->Void, get: Void->Metadata, 
 	
 }
 
-class PartialImpl {
+class PartialImplementation {
 	
 	static inline var DEFAULT = ':defaultImplementation';
 	static inline var REQUIRES = ':defaultRequires';
@@ -101,7 +101,7 @@ class PartialImpl {
 	static public function setDefault(f:Fieldish, expr:Expr) 
 		f.setMeta(DEFAULT, true, expr);
 	
-	static public function process(ctx:ClassBuilder) {
+	static public function apply(ctx:ClassBuilder) {
 		if (ctx.target.isInterface) {
 			var toRemove = [];
 			for (m in ctx) 
@@ -156,9 +156,9 @@ class PartialImpl {
 										
 										switch (d.expr) {
 											case ECheckType(e, t):
-												Init.field(ctx.getConstructor(), f.name, t, e);
+												DirectInitialization.field(ctx.getConstructor(), f.name, t, e);
 											default:
-												Init.field(ctx.getConstructor(), f.name, f.type.toComplex(), d);//for people who specify this manually
+												DirectInitialization.field(ctx.getConstructor(), f.name, f.type.toComplex(), d);//for people who specify this manually
 										}
 									case None:
 								}
@@ -207,9 +207,9 @@ class PartialImpl {
 										case Some(d):
 											switch (d.expr) {
 												case ECheckType(e, t):
-													Init.field(ctx.getConstructor(), f.name, t, e);
+													DirectInitialization.field(ctx.getConstructor(), f.name, t, e);
 												default:
-													Init.field(ctx.getConstructor(), f.name, type, d);
+													DirectInitialization.field(ctx.getConstructor(), f.name, type, d);
 											}
 										case None:
 									}

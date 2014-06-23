@@ -1,19 +1,15 @@
-package tink.lang.macros;
+package tink.lang.sugar;
 
 import haxe.macro.Expr;
 import tink.macro.*;
 using tink.CoreApi;
 using tink.MacroApi;
 
-class FuncOptions {
-	static public function process(c:ClassBuilder) {
+class ComplexDefaultArguments {
+	static public function apply(c:ClassBuilder) 
 		for (m in c)
-			switch m.getFunction() {
-				case Success(f):
-					options(f, m.pos);
-				default:
-			}
-	}
+			m.getFunction().map(options.bind(_, m.pos));
+	
 	static function options(f:Function, pos:Position) {
 		var body = Lazy.ofFunc(function ()
 			return
@@ -68,7 +64,12 @@ class FuncOptions {
 									case macro ($_ : $t):
 										t;
 									default:
-										init.typeof().map(Types.toComplex.bind(_, { direct: true })).orUse(pos.makeBlankType());
+										switch init.typeof() {
+											case Success(type): type.toComplex({ direct: true });
+											default: pos.makeBlankType();
+										}
+										//TODO: this code should do the same as the switch above but results in "macro returned an invalid result"
+										// init.typeof().map(Types.toComplex.bind(_, { direct: true })).orUse(pos.makeBlankType());
 								}
 									
 										
@@ -90,8 +91,13 @@ class FuncOptions {
 						}
 						
 						arg.type = TAnonymous(fields); //TODO: we could trick the typer into looking over the body
-						arg.value = null;
+						arg.value = macro null;
 					default:
+						if (!(macro function (__ = ${arg.value}) {}).typeof().isSuccess()) {
+							arg.type = arg.value.pos.makeBlankType();
+							prepend(macro if ($i{arg.name} == null) $i{arg.name} = ${arg.value});
+							arg.value = macro null;
+						}
 				}
 	}
 }

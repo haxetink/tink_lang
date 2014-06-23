@@ -1,4 +1,4 @@
-package tink.lang.macros;
+package tink.lang.sugar;
 
 import haxe.macro.Context;
 import haxe.macro.Expr;
@@ -12,10 +12,10 @@ using Lambda;
 typedef ClassFieldFilter = ClassField->Bool;
 typedef ForwardRules = { call:Null<Expr>, get:Null<Expr>, set:Null<Expr> };
 
-class Forward {
+class Forwarding {
 	static inline var TAG = ":forward";
-	static public function process(ctx:ClassBuilder) 
-		new Forward(ctx).processMembers();
+	static public function apply(ctx:ClassBuilder) 
+		new Forwarding(ctx).processMembers();
 
 	var ctx:ClassBuilder;
 	function new(ctx) 

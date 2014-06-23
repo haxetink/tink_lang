@@ -1,4 +1,4 @@
-package tink.lang.macros;
+package tink.lang.sugar;
 
 import haxe.macro.Context;
 import haxe.macro.Expr;
@@ -7,13 +7,13 @@ import tink.macro.ClassBuilder;
 
 import tink.lang.macros.*;
 import tink.core.Lazy;
-import tink.lang.macros.CustomIter;
+import tink.lang.sugar.CustomIterator;
 
 using tink.MacroApi;
 using StringTools;
 using Lambda;
 
-class LoopSugar {
+class ExtendedLoops {
 	
 	static function getVar(v:Expr):LoopVar 
 		return { name: v.getIdent().sure(), pos: v.pos }	
@@ -243,7 +243,7 @@ class LoopSugar {
 				default: false;
 			}
 	
-	static function standardIter(e:Expr):CustomIter {
+	static function standardIter(e:Expr):CustomIterator {
 		var target = temp('target');
 		var targetExpr = target.resolve(e.pos);
 		
@@ -253,8 +253,8 @@ class LoopSugar {
 			next: macro $targetExpr.next()
 		}
 	}
-	static function getIterParts(e:Expr):CustomIter {
-		var ret = FastLoops.iter(e);
+	static function getIterParts(e:Expr):CustomIterator {
+		var ret = LoopOptimization.iterateOn(e);
 		return
 			if (ret == null) standardIter(e);
 			else ret;
@@ -379,7 +379,7 @@ class LoopSugar {
 		}
 	}
 	
-	static public function comprehension(e:Expr) {
+	static public function comprehensions(e:Expr) {
 		function loop(it, body)
 			return EFor(it, body).at(e.pos);
 		

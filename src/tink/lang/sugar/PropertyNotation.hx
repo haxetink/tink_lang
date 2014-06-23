@@ -1,11 +1,11 @@
-package tink.lang.macros;
+package tink.lang.sugar;
 
 import haxe.macro.Expr;
 import tink.macro.*;
 
 using tink.MacroApi;
 
-class PropBuilder {
+class PropertyNotation {
 	static public inline var PROP = ':prop';
 	static public inline var READ = ':read';
 	static public inline var CALC = ':calc';
@@ -16,8 +16,8 @@ class PropBuilder {
 		':calculated' => CALC,
 	];
 		
-	static public function process(ctx:ClassBuilder) 
-		new PropBuilder(ctx).processMembers();
+	static public function apply(ctx:ClassBuilder) 
+		new PropertyNotation(ctx).processMembers();
 	
 	static public function make(m:Member, t:ComplexType, getter:Expr, setter:Null<Expr>, hasField:String->Bool, addField:Member->?Bool->Member, ?e:Expr) {
 		var get = 'get_' + m.name,

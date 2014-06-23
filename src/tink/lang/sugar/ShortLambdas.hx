@@ -1,10 +1,10 @@
-package tink.lang.macros;
+package tink.lang.sugar;
 
 import haxe.macro.Expr;
 import haxe.ds.Option;
 using tink.MacroApi;
 
-class ShortLambda {
+class ShortLambdas {
 	static public function postfix(e:Expr) 
 		return
 			switch e {
@@ -46,7 +46,8 @@ class ShortLambda {
 				old.yield(function (e) return macro @:pos(old.pos) return $e, { leaveLoops : true });
 				
 	static function arrow(args, body:Expr) 
-		return body.bounceExpr(returnIfNotVoid).func(args, false).asExpr();
+		return body.func(args, true).asExpr();
+		// return body.bounceExpr(returnIfNotVoid).func(args, false).asExpr();
 	
 	static function getIdents(exprs:Array<Expr>)
 		return [
@@ -54,7 +55,7 @@ class ShortLambda {
 				e.getIdent().sure().toArg()
 		];
 	
-	static function parseSwitch(arg, cases, edef, e, ?isFunction):Expr
+	static function parseSwitch(arg, cases, edef, e:Expr, ?isFunction):Expr
 		return
 			switch parseArg(arg) {
 				case Success(o):

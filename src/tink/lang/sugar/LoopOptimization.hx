@@ -1,14 +1,14 @@
-package tink.lang.macros;
+package tink.lang.sugar;
 
-import tink.lang.macros.CustomIter;
+import tink.lang.sugar.CustomIterator;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 
 using tink.MacroApi;
 
-class FastLoops {
+class LoopOptimization {
 	static var patched = false;
-	static function processRule(init:Expr, hasNext:Expr, next:Expr):CustomIter {
+	static function processRule(init:Expr, hasNext:Expr, next:Expr):CustomIterator {
 		var init = 
 			switch (init.expr) {
 				case EBlock(exprs):
@@ -281,10 +281,10 @@ class FastLoops {
 			}
 		);		
 	}
-	static function buildFastLoop(e:Expr, f:CustomIter):CustomIter {
+	static function buildFastLoop(e:Expr, f:CustomIterator):CustomIterator {
 		var vars:Dynamic<String> = { };
 		function add(name:String) {
-			var n = LoopSugar.temp(name);
+			var n = ExtendedLoops.temp(name);
 			Reflect.setField(vars, name, n);
 			return n;
 		}
@@ -312,7 +312,7 @@ class FastLoops {
 		}
 	}
 	
-	static public function iter(e:Expr):CustomIter {
+	static public function iterateOn(e:Expr):CustomIterator {
 		var fast = fastIter(e);
 		return
 			if (fast == null) null;
