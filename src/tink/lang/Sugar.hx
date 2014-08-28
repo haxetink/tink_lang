@@ -1,19 +1,24 @@
-package tink.lang.macros;
+package tink.lang;
 
 #if macro
 	import haxe.macro.Context;
 	import haxe.macro.Expr;
-	import tink.lang.macros.LoopSugar;
+	import tink.lang.sugar.*;
 	import tink.macro.ClassBuilder;
+	import tink.priority.Queue;
 	
 	using tink.MacroApi;
+	using tink.CoreApi;
 #end
 	
-class ClassSugar {
-	macro static public function process():Array<Field> 
+	
+typedef Plugin = Callback<ClassBuilder>;
+
+class Sugar {
+	macro static public function apply():Array<Field> 
 		return 
 			ClassBuilder.run(
-				PLUGINS,
+				classLevel,
 				Context.getLocalClass().get().meta.get().getValues(':verbose').length > 0
 			);
 	
@@ -34,6 +39,53 @@ class ClassSugar {
 			}
 			return syntax(transform);
 		}
+		
+		static function anyAwaits(e:Array<Expr>) {
+			for (e in e)
+				switch e {
+					case macro @await $_: return true;
+					default:
+				}
+			return false;
+		}
+		static function cps(e:Expr)
+			return
+				switch e {
+					case macro $callee($a{args}) if (anyAwaits([callee].concat(args))):
+						var accumulated = [];
+						
+						var ret = 
+							switch callee {
+								case macro @await $e:
+									macro @:pos(e.pos) 
+										$e.handle(function (__callee) {
+											__callee($a{accumulated});
+										});
+								default:
+									macro @:pos(e.pos) $callee($a{accumulated});
+							}						
+						
+						args = args.copy();
+						args.reverse();
+						
+						for (e in args) {
+							
+							var tmp = MacroApi.tempName();
+							accumulated.unshift(tmp.resolve(e.pos));
+							
+							ret = switch e {
+								case macro @await $e:
+									macro @:pos(e.pos) $e.handle(function ($tmp) $ret);
+								default: 
+									macro @:pos(e.pos) {
+										var $tmp = e;
+										$ret;
+									}
+							}
+						}
+						e;
+					default: e;
+				}
 		
 		static public function syntax(rule:Expr->Expr) 
 			return function (ctx:ClassBuilder) {
@@ -94,29 +146,94 @@ class ClassSugar {
 					}
 				default: e;
 			}
+			
+		static function switchArrayRest(e:Expr)
+			return switch e.expr {
+				case ESwitch(_, cases, _):
+					for (c in cases)
+						c.values = [for (v in c.values) 
+							v.transform(function (e:Expr) 
+								return switch e.expr {
+									case EArrayDecl(v) if (v.length > 0):
+										for (i in 0...v.length)
+											switch v[i] {
+												case macro @rest $i{name}:
+													var head = v.slice(0, i);
+													var tail = v.slice(i + 1);
+													
+													e = (macro { 
+														head: _.slice(0, $v{head.length}), 
+														rest: _.slice($v{head.length}, _.length - $v{tail.length}),
+														tail: _.slice(_.length - $v{tail.length}),
+													} => {
+														rest: $i{name},
+														head: $a{head},
+														tail: $a{tail},
+													});
+												default:
+											}
+										e;
+									default:
+										e;
+								}
+							)
+						];
+					e;
+				default: e;
+			}
 				
-		//TODO: it seems a little monolithic to yank all plugins here
-		static var PLUGINS = [
-			simpleSugar(ShortLambda.protectMaps),
+		static var expressionLevel = new Queue<Expr->Expr>();	
+		
+		static var classLevel = {
 			
-			FuncOptions.process,
-			Dispatch.members,
-			PropBuilder.process,
-			Init.process,
-			Forward.process,
+			var ret = new Queue();
 			
-			simpleSugar(shortcuts),
+			function queue<T>(queue:Queue<T>, items:Array<Pair<String, T>>) {				
+				var first = items.shift();
+				queue.whenever(first.b, first.a);
+				var last = first.a;
+				for (item in items) 
+					queue.after(last, item.b, last = item.a);
+			}
 			
-			simpleSugar(LoopSugar.comprehension),
-			simpleSugar(LoopSugar.firstPass),
+			function p<X>(a:String, b:X)
+				return new Pair('tink.lang.sugar.$a', b);
 			
-			simpleSugar(ShortLambda.process, true),
-			simpleSugar(ShortLambda.postfix),
+			queue(ret, [
+				p('ShortLambdas::protectMaps', simpleSugar(ShortLambdas.protectMaps)),
 			
-			simpleSugar(defaultVal),
-			PartialImpl.process,
+				p('Notifiers', Notifiers.apply),
+				p('PropertyNotation', PropertyNotation.apply),
+				p('DirectInitialization', DirectInitialization.process),
+				p('Forwarding', Forwarding.apply),
+				
+				new Pair('tink.lang.Sugar::expressionLevel', simpleSugar(function (e:Expr) {
+					for (rule in expressionLevel)
+						e = rule(e);
+					return e;
+				}, true)),
+				
+				p('ComplexDefaultArguments', ComplexDefaultArguments.apply),
+				
+				p('PartialImplementation', PartialImplementation.apply),
+				
+				p('ExtendedLoops::secondPass', simpleSugar(ExtendedLoops.secondPass)),
+			]);
 			
-			simpleSugar(LoopSugar.secondPass),
-		];	
+			queue(expressionLevel, [
+				p('shortcuts', shortcuts),
+				p('switchArrayRest', switchArrayRest),
+				
+				p('ExtendedLoops::comprehensions', ExtendedLoops.comprehensions),
+				p('ExtendedLoops::firstPass', ExtendedLoops.firstPass),
+				
+				p('ShortLambdas::process', ShortLambdas.process),
+				p('ShortLambdas::postfix', ShortLambdas.postfix),
+				
+				p('Default', defaultVal),
+			]);
+			
+			ret;
+		}	
 	#end
 }

@@ -2,7 +2,10 @@ package ;
 
 import haxe.unit.TestCase;
 import haxe.unit.TestRunner;
-import tink.lang.helpers.StringDispatcher;
+
+using tink.CoreApi;
+
+using tink.Lang;
 
 class RunTests {
 	static var tests:Array<TestCase> = [

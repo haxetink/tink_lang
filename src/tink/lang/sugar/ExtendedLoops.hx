@@ -244,14 +244,23 @@ class ExtendedLoops {
 			}
 	
 	static function standardIter(e:Expr):CustomIterator {
-		var target = temp('target');
+		var target = temp('target'),  
+        index = temp('index'),
+        count = temp('count');
 		var targetExpr = target.resolve(e.pos);
-		
-		return {
-			init: new LoopSetup().define(target, makeIterator(e)),
-			hasNext: macro $targetExpr.hasNext(), 
-			next: macro $targetExpr.next()
-		}
+		return 
+      if ((macro { $e[0]; $e.length; }).typeof().isSuccess()) 
+        {
+          init: new LoopSetup().definePre(target, e).define(index, macro 0).define(count, macro $targetExpr.length),
+          hasNext: macro $i{index} < $i{count}, 
+          next: macro $targetExpr[$i{index}++]
+        }
+      else 
+        {
+          init: new LoopSetup().define(target, makeIterator(e)),
+          hasNext: macro $targetExpr.hasNext(), 
+          next: macro $targetExpr.next()
+        }
 	}
 	static function getIterParts(e:Expr):CustomIterator {
 		var ret = LoopOptimization.iterateOn(e);

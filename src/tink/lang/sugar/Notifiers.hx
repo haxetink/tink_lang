@@ -33,7 +33,7 @@ class Notifiers {
 							case FVar(t, e):
 								if (t == null)
 									t = if (e == null) 
-											macro : tink.core.Signal.Noise;
+											macro : tink.core.Noise;
 										else 
 											e.pos.makeBlankType();
 								if (e == null) {	

@@ -24,7 +24,6 @@ class TestShortLambda extends Base implements Lang {
 		f(0);
 		f(1);
 		
-		
 		assertEquals('4,5,1,1', res.join(','));
 		
 		var mixed = @do switch _ {

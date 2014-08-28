@@ -2,7 +2,23 @@ package ;
 
 import tink.Lang;
 
+abstract Arrayish(Array<Int>){
+  public var length(get, never):Int;
+  public function new() this = [for (i in 0...100) i];
+  inline function get_length() return this.length;
+  @:arrayAccess inline function get(index:Int) 
+    return this[index];
+    
+  public inline function toArray()
+    return this;
+}
+
 class TestLoops extends Base implements Lang {
+  function testAbstract() {
+    var a = new Arrayish();
+    for ([i in a, j in a.toArray()]) 
+      assertEquals(j, i);
+  }
 	function testArray() {
 		var a = [for (i in 0...100) Std.string(i)];
 		var l = Lambda.list(a),
@@ -25,6 +41,13 @@ class TestLoops extends Base implements Lang {
 		
 		for ([x in l, i in 0...l.length])
 			assertEquals(Std.string(i), x);
+	}
+	
+	function testCounter() {
+		var a = [for (i in 0...100) i];
+		for ([i in 0...100, j++]) {
+			assertEquals(a[i], j);
+		}
 	}
 	
 	function compareFloatArray(expected:Array<Float>, found:Array<Float>) {

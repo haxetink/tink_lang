@@ -5,18 +5,21 @@ import tink.Lang;
 using Lambda;
 
 private class Dummy implements tink.Lang {
-	public function new() {}
+	public function new(foo = [7], o1 = { x: 5, y: 'bar'}, o2 = { a: o1.x, b: foo[0]}) {
+    function test(foo = [7], o1 = { x: 5, y: 'bar'}, o2 = { a: o1.x, b: foo[0]}) {}
+	}
 	
-	public function normal(o1 = { x: 5, y: 'bar'}, o2 = { a: o1.x, b: 7}) 
+	public function normal(foo = [7], o1 = { x: 5, y: 'bar'}, o2 = { a: o1.x, b: foo[0]}) 
 		return { o1: o1, o2: o2 };
 	
-	public function direct(_ = { x: 5, y: 'bar'}) 
+	public function direct(_ = { x: 5, y: 'bar'}, o3 = { x: 4 }) 
 		return { x: x, y: y };
 	
 }
 
 class TestOptions extends Base {
 	function test() {
+		
 		var d = new Dummy();
 		for (i in 0...10) {
 			var r = d.normal({x:i});

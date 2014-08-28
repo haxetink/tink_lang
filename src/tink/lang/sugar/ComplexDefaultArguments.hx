@@ -6,25 +6,38 @@ using tink.CoreApi;
 using tink.MacroApi;
 
 class ComplexDefaultArguments {
-	static public function apply(c:ClassBuilder) 
+	static public function apply(c:ClassBuilder) {
 		for (m in c)
-			m.getFunction().map(options.bind(_, m.pos));
+      switch m.getFunction() {
+        case Success(f): options(f, m.pos);
+        default:
+      }
+		if (c.hasConstructor())
+      c.getConstructor().onGenerate(function (f) options(f, f.expr.pos));
+	}
 	
 	static function options(f:Function, pos:Position) {
-		var body = Lazy.ofFunc(function ()
-			return
-				if (f.expr == null) [];
-				else switch f.expr.expr {
-					case EBlock(body): body;
-					default:
-						var body = [f.expr];
-						f.expr = body.toMBlock();
-						body;
-				}
-		);
+    f.expr = 
+      f.expr.transform(
+        function (e) return switch e.expr {
+          case EFunction(_, f):
+            options(f, e.pos);
+            e;
+          default: e;
+        }
+      );
+      
+		var body =
+      switch f.expr.expr {
+				case EBlock(body): body;
+				default:
+					var body = [f.expr];
+					f.expr = body.toMBlock();
+					body;
+			}
 		
 		function prepend(e) 
-			body.get().unshift(e);
+			body.unshift(e);
 		
 		var args = f.args.copy();
 		args.reverse();
@@ -33,8 +46,8 @@ class ComplexDefaultArguments {
 				switch arg.value.expr {
 					case EObjectDecl(parts):
 						var opt = true,
-							fields = new Array<Field>(),
-							direct = arg.name == '_';
+                fields = new Array<Field>(),
+                direct = arg.name == '_';
 							
 						if (direct)	
 							arg.name = MacroApi.tempName();
