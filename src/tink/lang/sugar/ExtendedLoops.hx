@@ -49,6 +49,8 @@ class ExtendedLoops {
 					num(v, start, end, step, false, fallback);
 				case macro $v -= $step in $start...$end:
 					num(v, start, end, step, false, fallback);
+				case macro $e1 in $e2 || $fallback, macro $e1 in $e2 | $fallback:
+					makeHead(getVar(e1), Any(e2), fallback);
 				case macro $e1 in $e2:
 					makeHead(getVar(e1), Any(e2), null);
 				default: 
