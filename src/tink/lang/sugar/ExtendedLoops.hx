@@ -107,9 +107,9 @@ class ExtendedLoops {
 		var ret = 			
 			switch its {
 				case [macro $i{_} in $target] if (single):
-					macro for (${its[0]}) $expr;
+					macro @:pos(it.pos) for (${its[0]}) $expr;
 				default:
-					macro for ([$a{its}]) $expr;
+					macro @:pos(it.pos) for ([$a{its}]) $expr;
 			}
 			
 		return 
