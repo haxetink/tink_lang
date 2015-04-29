@@ -40,53 +40,6 @@ class Sugar {
 			return syntax(transform);
 		}
 		
-		static function anyAwaits(e:Array<Expr>) {
-			for (e in e)
-				switch e {
-					case macro @await $_: return true;
-					default:
-				}
-			return false;
-		}
-		static function cps(e:Expr)
-			return
-				switch e {
-					case macro $callee($a{args}) if (anyAwaits([callee].concat(args))):
-						var accumulated = [];
-						
-						var ret = 
-							switch callee {
-								case macro @await $e:
-									macro @:pos(e.pos) 
-										$e.handle(function (__callee) {
-											__callee($a{accumulated});
-										});
-								default:
-									macro @:pos(e.pos) $callee($a{accumulated});
-							}						
-						
-						args = args.copy();
-						args.reverse();
-						
-						for (e in args) {
-							
-							var tmp = MacroApi.tempName();
-							accumulated.unshift(tmp.resolve(e.pos));
-							
-							ret = switch e {
-								case macro @await $e:
-									macro @:pos(e.pos) $e.handle(function ($tmp) $ret);
-								default: 
-									macro @:pos(e.pos) {
-										var $tmp = e;
-										$ret;
-									}
-							}
-						}
-						e;
-					default: e;
-				}
-		
 		static public function syntax(rule:Expr->Expr) 
 			return function (ctx:ClassBuilder) {
 				function transform(f:Function)
@@ -184,7 +137,7 @@ class Sugar {
 				
 		static var expressionLevel = new Queue<Expr->Expr>();	
 		
-		static var classLevel = {
+		static public var classLevel(default, null) = {
 			
 			var ret = new Queue();
 			
