@@ -19,7 +19,7 @@ class Sugar {
 		return 
 			ClassBuilder.run(
 				classLevel,
-				Context.getLocalClass().get().meta.get().getValues(':verbose').length > 0
+				Context.getLocalClass().get().meta.has(':verbose')
 			);
 	
 	#if macro
@@ -147,6 +147,48 @@ class Sugar {
 				default: e;
 			}
 			
+		static function switchType(e:Expr) 
+			return switch e.expr {
+				case ESwitch(target, cases, def) if (cases.length > 0):
+					switch cases[0].values {
+						case [macro ($_: $_)]:
+							if (def == null) target.reject('Type switches need default clause');
+							for (c in cases) 
+								c.values = 
+									switch c.values {
+										case [macro ($pattern : $t)]:
+											var pos = c.values[0].pos;
+											
+											var te = switch t {
+												case TPath({ pack: parts, name: name, params: params, sub: sub}): 
+													parts = parts.copy();
+													parts.push(name);
+													
+													if (params != null)
+														for (p in params)
+															switch p {
+																case TPType(macro : Dynamic):
+																default: pos.error('Can only use `Dynamic` type parameters in type switching');
+															}
+													if (sub != null)
+														parts.push(sub);
+														
+													parts.drill(pos);
+														
+												default: 
+													pos.error('Invalid type for switching');
+											}
+											
+											[macro @:pos(pos) (if (Std.is(_, $te)) [(_ : $t)] else []) => [$pattern]];
+										default: 
+											c.values[0].reject();
+									}
+							e;
+						default: e;
+					}
+				default: e;
+			}
+		
 		static function switchArrayRest(e:Expr)
 			return switch e.expr {
 				case ESwitch(_, cases, _):
@@ -222,6 +264,7 @@ class Sugar {
 			
 			queue(expressionLevel, [
 				p('shortcuts', shortcuts),
+				p('switchType', switchType),
 				p('switchArrayRest', switchArrayRest),
 				
 				p('ExtendedLoops::comprehensions', ExtendedLoops.comprehensions),
