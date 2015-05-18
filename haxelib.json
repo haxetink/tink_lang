@@ -1,14 +1,21 @@
 {
 	"name": "tink_lang",
-	"url" : "http://haxetink.org/tink_lang",
 	"license": "MIT",
-	"tags": ["tink", "cross", "utility", "sugar"],
+	"tags": [
+		"tink",
+		"cross",
+		"utility",
+		"sugar"
+	],
+	"classPath": "src",
 	"description": "A syntactic sugar bowl",
-	"version": "0.0.0-beta",
-	"releasenote": "Overall refactoring.",
-	"contributors": ["back2dos"],
+	"contributors": [
+		"back2dos"
+	],
+	"releasenote": "First alpha.",
+	"version": "0.1.0-alpha",
+	"url": "http://haxetink.org/tink_lang",
 	"dependencies": {
 		"tink_syntaxhub": ""
-	},
-	"classPath": "src" 
+	}
 }
