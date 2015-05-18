@@ -1,8 +1,6 @@
 package ;
 
-import tink.Lang;
-
-class TestSignalDecl extends Base implements Lang {
+@:tink class TestSignalDecl extends Base {
 	
 	@:signal var foo:Int;
 	@:signal var bar = this.foo.map([i] => 2 * i);
@@ -53,7 +51,7 @@ class TestSignalDecl extends Base implements Lang {
 
 typedef MouseEvent = { x: Float };
 
-class Observable implements tink.Lang {
+@:tink class Observable {
 	var width:Float = _;
 	@:signal var click:MouseEvent;
 	@:future var data:haxe.io.Bytes;

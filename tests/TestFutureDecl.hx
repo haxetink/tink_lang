@@ -1,8 +1,6 @@
 package ;
 
-import tink.Lang;
-
-class TestFutureDecl extends Base implements Lang {
+@:tink class TestFutureDecl extends Base {
 	@:future var ten = tink.core.Future.sync(10);
 	@:future var some:Int;
 	function testConst() {

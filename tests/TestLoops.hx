@@ -1,6 +1,6 @@
 package ;
 
-import tink.Lang;
+import haxe.ds.Either;
 
 abstract Arrayish(Array<Int>){
   public var length(get, never):Int;
@@ -13,7 +13,7 @@ abstract Arrayish(Array<Int>){
     return this;
 }
 
-class TestLoops extends Base implements Lang {
+@:tink class TestLoops extends Base {
   function testAbstract() {
     var a = new Arrayish();
     for ([i in a, j in a.toArray()]) 
@@ -29,7 +29,7 @@ class TestLoops extends Base implements Lang {
 			ret.sort(Reflect.compare);
 			return ret.join(',');			
 		}			
-
+		
 		assertEquals(sort(a), sort([for ([i in sm.keys()]) i]));
 		assertEquals(sort(a), sort([for ([i in im.keys()]) i]));
 		
@@ -42,13 +42,28 @@ class TestLoops extends Base implements Lang {
 		for ([x in l, i in 0...l.length])
 			assertEquals(Std.string(i), x);
 	}
-	
-	function testCounter() {
-		var a = [for (i in 0...100) i];
-		for ([i in 0...100, j++]) {
-			assertEquals(a[i], j);
-		}
+
+	function testYielding() {
+		var ret = [for (i in 1...5) {
+			if (i == 1) @yield 0;
+			@yield -i;
+			@yield i;
+		}];
+		compareArray([0, -1, 1, -2, 2, -3, 3, -4, 4], ret);
 	}
+	function testMatching() {
+		var a = [Left(4), Right('foo'), Right('bar'), Left(5), Left(6)];
+		
+		compareArray([4, 5, 6], [for (Left(x) in a) x]);
+		compareArray(['foo', 'bar'], [for (Right(x) in a) x]);
+	}
+	
+	//function testCounter() {
+		//var a = [for (i in 0...100) i];
+		//for ([i in 0...100, j++]) {
+			//assertEquals(a[i], j);
+		//}
+	//}
 	
 	function compareFloatArray(expected:Array<Float>, found:Array<Float>) {
 		assertEquals(expected.length, found.length);
@@ -198,9 +213,9 @@ class ControlLooper {
 	}	
 }
 
-class SuperLooper implements Lang {
+@:tink class SuperLooper {
 	public function new() { }
-	public function floatUp(start:Float, end:Float, step:Float, breaker) 
+	public function floatUp(start:Float, end:Float, step:Float, breaker)
 		return [for (i += step in start...end) {
 			if (breaker(i)) break;
 			i;
@@ -224,7 +239,7 @@ class SuperLooper implements Lang {
 			i;
 		}];
 
-	public function complexComprehension(imin, imax, jmax, jmin, step)
+	public function complexComprehension(imin, imax, jmax, jmin, step:Int)
 		return [for ([i in imin...imax, j -= step in jmax...jmin]) '$i:$j'];
 	
 	public function loopMap(m:Map<Int, Int>) {

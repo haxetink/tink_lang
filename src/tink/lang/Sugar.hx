@@ -1,4 +1,5 @@
 package tink.lang;
+import tink.priority.Selector;
 
 #if macro
 	import haxe.macro.Context;
@@ -15,45 +16,8 @@ package tink.lang;
 typedef Plugin = Callback<ClassBuilder>;
 
 class Sugar {
-	macro static public function apply():Array<Field> 
-		return 
-			ClassBuilder.run(
-				classLevel,
-				Context.getLocalClass().get().meta.has(':verbose')
-			);
 	
 	#if macro
-		static public function simpleSugar(rule:Expr->Expr, ?outsideIn = false) {
-			function transform(e:Expr) {
-				return 
-					if (e == null || e.expr == null) e;
-					else 
-						switch (e.expr) {
-							case EMeta( { name: ':diet' }, _): e;
-							default: 
-								if (outsideIn) 
-									rule(e).map(transform);
-								else 
-									rule(e.map(transform));
-						}
-			}
-			return syntax(transform);
-		}
-		
-		static public function syntax(rule:Expr->Expr) 
-			return function (ctx:ClassBuilder) {
-				function transform(f:Function)
-					if (f.expr != null)
-						f.expr = rule(f.expr);
-				ctx.getConstructor().onGenerate(transform);
-				for (m in ctx)
-					switch m.kind {
-						case FFun(f): transform(f);
-						case FProp(_, _, _, e), FVar(_, e): 
-							if (e != null)
-								e.expr = rule(e).expr;//TODO: it might be better to just create a new kind, rather than modifying the expression in place
-					}
-			}
 		
 		static function shortcuts(e:Expr)
 			return switch e {
@@ -133,6 +97,8 @@ class Sugar {
 											}
 											
 											[macro @:pos(pos) (if (Std.is(_, $te)) [(_ : $t)] else []) => [$pattern]];
+										case [macro $i{ _ }]:
+											c.values;
 										default: 
 											c.values[0].reject();
 									}
@@ -176,16 +142,22 @@ class Sugar {
 					e;
 				default: e;
 			}
-				
-		static var expressionLevel = new Queue<Expr->Expr>();	
 		
-		static public var classLevel(default, null) = {
+		static function use() {
 			
-			var ret = new Queue();
-			
-			function queue<T>(queue:Queue<T>, items:Array<Pair<String, T>>) {				
+			function appliesTo(c:ClassBuilder)
+				return c.target.meta.has(':tink');
+					
+			function queue<T>(queue:Queue<T>, items:Array<Pair<String, T>>, ?addFirst) {				
 				var first = items.shift();
-				queue.whenever(first.b, first.a);
+				if (first == null)
+					return;
+					
+				if (addFirst == null)
+					addFirst = queue.whenever;
+				
+				addFirst(first.b, first.a);
+				
 				var last = first.a;
 				for (item in items) 
 					queue.after(last, item.b, last = item.a);
@@ -194,42 +166,63 @@ class Sugar {
 			function p<X>(a:String, b:X)
 				return new Pair('tink.lang.sugar.$a', b);
 			
-			queue(ret, [
-				p('ShortLambdas::protectMaps', simpleSugar(ShortLambdas.protectMaps)),
+			{
+				var p = function (a, b)
+					return p(a, function (c:ClassBuilder) if (appliesTo(c)) b(c));
+					
+				queue(SyntaxHub.classLevel, [
+					p('Notifiers', Notifiers.apply),
+					p('PropertyNotation', PropertyNotation.apply),
+					p('DirectInitialization', DirectInitialization.process),
+					p('Forwarding', Forwarding.apply),
+					p('ComplexDefaultArguments::members', ComplexDefaultArguments.members),
+				], function (x, ?y, ?z) SyntaxHub.classLevel.before(SyntaxHub.exprLevel.id, x, y, z));
+				
+				SyntaxHub.classLevel.after(
+					function (_) return true, //this is a little aggressive but I see no reason why it should happen sooner
+					function (c:ClassBuilder) {
+						if (c.target.isInterface && !appliesTo(c))
+							return;
+						
+						if (!appliesTo(c)) {
+							for (i in c.target.interfaces)
+								if (i.t.get().meta.has(':tink')) {
+									PartialImplementation.apply(c);
+									break;
+								}
+						}
+						else PartialImplementation.apply(c);
+					}
+				);
+			}	
 			
-				p('Notifiers', Notifiers.apply),
-				p('PropertyNotation', PropertyNotation.apply),
-				p('DirectInitialization', DirectInitialization.process),
-				p('Forwarding', Forwarding.apply),
+			{
 				
-				new Pair('tink.lang.Sugar::expressionLevel', simpleSugar(function (e:Expr) {
-					for (rule in expressionLevel)
-						e = rule(e);
-					return e;
-				}, true)),
+				var p = function (a, b)
+					return p(a, {
+						appliesTo: appliesTo,
+						apply: b
+					});
 				
-				p('ComplexDefaultArguments', ComplexDefaultArguments.apply),
+				queue(SyntaxHub.exprLevel.inward, [
+					p('ShortLambdas::protectMaps', ShortLambdas.protectMaps),
+					p('ShortLambdas::matchers', ShortLambdas.matchers),
+					p('ExtendedLoops::comprehensions', ExtendedLoops.comprehensions),
+					p('ExtendedLoops::transform', ExtendedLoops.apply),
+				]);
 				
-				p('PartialImplementation', PartialImplementation.apply),
+				queue(SyntaxHub.exprLevel.outward, [
+					p('shortcuts', shortcuts),
+					p('switchType', switchType),
+					p('switchArrayRest', switchArrayRest),
+					
+					p('ShortLambdas::process', ShortLambdas.process),
+					p('TrailingArguments', TrailingArguments.apply),
+					p('Default', defaultVal),
+				]);				
+			}
 				
-				p('ExtendedLoops::secondPass', simpleSugar(ExtendedLoops.secondPass)),
-			]);
-			
-			queue(expressionLevel, [
-				p('shortcuts', shortcuts),
-				p('switchType', switchType),
-				p('switchArrayRest', switchArrayRest),
-				
-				p('ExtendedLoops::comprehensions', ExtendedLoops.comprehensions),
-				p('ExtendedLoops::firstPass', ExtendedLoops.firstPass),
-				
-				p('ShortLambdas::process', ShortLambdas.process),
-				p('ShortLambdas::postfix', ShortLambdas.postfix),
-				
-				p('Default', defaultVal),
-			]);
-			
-			ret;
-		}	
+		}
+		
 	#end
 }

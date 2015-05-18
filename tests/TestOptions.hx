@@ -1,10 +1,9 @@
 package ;
 
 import haxe.ds.StringMap;
-import tink.Lang;
 using Lambda;
 
-private class Dummy implements tink.Lang {
+@:tink private class Dummy {
 	public function new(foo = [7], o1 = { x: 5, y: 'bar'}, o2 = { a: o1.x, b: foo[0]}) {
     function test(foo = [7], o1 = { x: 5, y: 'bar'}, o2 = { a: o1.x, b: foo[0]}) {}
 	}

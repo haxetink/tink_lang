@@ -1,7 +1,6 @@
 package ;
 
 import haxe.ds.StringMap;
-import tink.Lang;
 using Lambda;
 
 class TestInit extends Base {
@@ -20,7 +19,7 @@ class TestInit extends Base {
 	}
 }
 
-private class Dummy implements Lang {
+@:tink private class Dummy {
 	static public var value = [1,2,3];
 	public var foo:Array<Int> = Dummy.value;
 	public var bar:String = _;

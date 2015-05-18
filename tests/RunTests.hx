@@ -5,8 +5,6 @@ import haxe.unit.TestRunner;
 
 using tink.CoreApi;
 
-using tink.Lang;
-
 class RunTests {
 	static var tests:Array<TestCase> = [
 		new TestInit(),
@@ -17,6 +15,7 @@ class RunTests {
 		new TestOptions(),
 		new TestPartial(),
 		new TestShortLambda(),
+		new TestSwitch(),
 	];
 	
 	static function main() {

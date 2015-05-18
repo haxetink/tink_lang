@@ -1,6 +1,6 @@
 cd bin
-::neko tests.n
+neko tests.n
 ::node tests.js
 ::java -jar java/java.jar
-php php/index.php
+::php php/index.php
 pause

@@ -2,14 +2,13 @@ package ;
 
 import haxe.ds.StringMap;
 import haxe.unit.TestCase;
-import tink.Lang;
 using Lambda;
 
 class ClsTest extends TestCase {
 
-	public function new() {
+	public function new() 
 		super();
-	}
+	
 	function testFwdBuild() {
 		var last = null;
 		function add(a, b) {
@@ -124,7 +123,7 @@ typedef Fwd2 = {
 	function bar2():Void;
 }
 
-class Forwarder implements Lang {
+@:tink class Forwarder {
 	var fields = new StringMap<Dynamic>();
 	@:forward(!multiply) var target:FwdTarget;
 	@:forward function fwd2(x:Fwd2, x:Fwd1) {
@@ -136,7 +135,8 @@ class Forwarder implements Lang {
 		this.target = target;
 	}
 }
-class Built implements Lang {
+
+@:tink class Built {
 	public var a:Int = 0;
 	@:read var b:Int = 1;
 	@:read(2) var c:Int;
@@ -156,13 +156,13 @@ private class Base {
 	}
 }
 
-@:verboseb class Child extends Base implements Lang {
+@:tink class Child extends Base {
 	public var b:Int = _;
 	public var c = (3);
 	public var d:Int = b;
 	public var e:String = a;
 }
 
-class Child2 extends Child {
+@:tink class Child2 extends Child {
 
 }

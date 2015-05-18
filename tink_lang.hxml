@@ -1,15 +1,7 @@
-#-lib tink_macro
--cp ../tink_core/src
--cp ../tink_macro/src
+-lib tink_syntaxhub
 -cp src
 -cp tests
--dce full
--main Run
-#-D dump=pretty
-#-D benchmark
--js bin/tests.js
-#-swf bin/unit.swf
-#-php bin/php
-#-java bin/java
-#iota start Run.bat
-##iota start bin\unit.swf
+-neko bin/tests.n
+-D analyzer
+-main RunTests
+--macro tink.lang.Sugar.use()

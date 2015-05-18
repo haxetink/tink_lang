@@ -1,8 +1,6 @@
 package ;
 
-import tink.Lang;
-
-interface Enumerable<T> extends tink.Lang {
+@:tink interface Enumerable<T> {
 	var length(get, never):Int;
 	@:usedOnlyBy(iterator) 
 	var elements:Array<T> = _;
@@ -52,12 +50,12 @@ private class EmptyIterable<Y> implements Enumerable<Y> {
 }
 
 
-private class Single<Z> implements Enumerable<Z> {
+@:tink private class Single<Z> implements Enumerable<Z> {
 	var value:Z = _;
 	public function forEach(f:Z->Void) f(value);
 }
 
-private class SingleIterable<Z> implements Enumerable<Z> {
+@:tink private class SingleIterable<Z> implements Enumerable<Z> {
 	var value:Z = _;
 	public function iterator() {
 		var first = true;
@@ -74,7 +72,7 @@ private class SingleIterable<Z> implements Enumerable<Z> {
 	}
 }
 
-class TestPartial extends Base {
+@:tink class TestPartial extends Base {
 	function test() {
 		var d = new Default([1, 2, 3]),
 			e = new Empty(),

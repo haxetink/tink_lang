@@ -1,8 +1,6 @@
 package ;
 
-import tink.Lang;
-
-class TestShortLambda extends Base implements Lang {
+@:tink class TestShortLambda extends Base {
 	function testMatchers() {
 		var res = [];
 		var matcher = switch [_, _, _] {

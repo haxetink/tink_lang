@@ -5,13 +5,6 @@ import haxe.ds.Option;
 using tink.MacroApi;
 
 class ShortLambdas {
-	static public function postfix(e:Expr) 
-		return
-			switch e {
-				case macro $callee($a{args}) => $callback:
-					macro @:pos(e.pos) $callee($a{args.concat([callback])});
-				default: e;	
-			}
 	
 	static public function protectMaps(e:Expr)
 		return
@@ -45,8 +38,8 @@ class ShortLambdas {
 			else
 				old.yield(function (e) return macro @:pos(old.pos) return $e, { leaveLoops : true });
 				
-	static function arrow(args, body:Expr) 
-		return body.func(args, true).asExpr();
+	static function arrow(args, body:Expr, pos:Position) 
+		return body.func(args, true).asExpr(pos);
 		// return body.bounceExpr(returnIfNotVoid).func(args, false).asExpr();
 	
 	static function getIdents(exprs:Array<Expr>)
@@ -55,7 +48,7 @@ class ShortLambdas {
 				e.getIdent().sure().toArg()
 		];
 	
-	static function parseSwitch(arg, cases, edef, e:Expr, ?isFunction):Expr
+	static function parseSwitch(arg, cases, edef, e:Expr, isFunction):Expr
 		return
 			switch parseArg(arg) {
 				case Success(o):
@@ -70,9 +63,7 @@ class ShortLambdas {
 					var tmps = [for (i in 0...count) MacroApi.tempName().resolve()];
 					var body = ESwitch(tuple ? tmps.toArray() : tmps[0], cases, edef).at(e.pos);
 					process(
-						if (isFunction == null)
-							macro @:pos(e.pos) [$a{tmps}] => $body
-						else if (isFunction)
+						if (isFunction)
 							macro @:pos(e.pos) @f($a{tmps}) $body
 						else
 							macro @:pos(e.pos) @do($a{tmps}) $body
@@ -80,19 +71,26 @@ class ShortLambdas {
 				default: e;
 			}
 	
-	static public function process(e:Expr) 
+			
+	static public function matchers(e:Expr)
 		return
 			switch e {
 				case { expr:ESwitch(arg, cases, edef) }:	
-					parseSwitch(arg, cases, edef, e);
+					parseSwitch(arg, cases, edef, e, true);
 				case macro @do ${{ expr:ESwitch(arg, cases, edef) }}:	
 					parseSwitch(arg, cases, edef, e, false);
 				case macro @f ${{ expr:ESwitch(arg, cases, edef) }}:	
 					parseSwitch(arg, cases, edef, e, true);
+				default: e;
+			}
+			
+	static public function process(e:Expr) 
+		return
+			switch e {
 				case macro [$a{args}] => $body:
-					arrow(getIdents(args), body);
+					arrow(getIdents(args), body, e.pos);
 				case macro $i{arg} => $body:
-					arrow([arg.toArg()], body);
+					arrow([arg.toArg()], body, e.pos);
 				case macro @do($a{args}) $body:
 					body.func(getIdents(args), false).asExpr(e.pos);
 				case macro @f($a{args}) $body:

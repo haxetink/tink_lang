@@ -6,7 +6,7 @@ using tink.CoreApi;
 using tink.MacroApi;
 
 class ComplexDefaultArguments {
-	static public function apply(c:ClassBuilder) {
+	static public function members(c:ClassBuilder) {
 		for (m in c)
       switch m.getFunction() {
         case Success(f): options(f, m.pos);
