@@ -136,7 +136,6 @@ typedef Fwd2 = {
 	}
 }
 
-@:explain
 @:tink class Built {
 	public var a:Int = Std.random(0);
 	@:read var b:Int = Std.random(0) + 1;

@@ -1,9 +1,7 @@
 #each
--cp ../tink_core/src
--cp ../tink_macro/src
--cp src
+
+-lib tink_lang
 -cp tests
-#-lib tink_macro
 -dce full
 -main RunTests
 --each
@@ -39,7 +37,7 @@
 #java
 --next
 -java bin/java
--cmd java -jar bin/java/java.jar
+-cmd java -jar bin/java/RunTests.jar
 
 #cpp
 --next
