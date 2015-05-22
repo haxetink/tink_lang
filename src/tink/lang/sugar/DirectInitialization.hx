@@ -19,21 +19,25 @@ class DirectInitialization {
 				inferFrom.typeof().sure().toComplex();
 			else 
 				t;
-
+				
+	function isConst(e:Expr)
+		return switch e.expr {
+			case EConst(CInt(_) | CString(_) | CFloat(_) | CIdent('true' | 'false' | 'null')): true;
+			default: false;
+		}
+		
 	function processMembers() 
 		for (member in ctx) {
 			if (!member.isStatic)
 				switch (member.kind) {
+					case FVar(_, e) | FProp(_, _, _, e) if (e == null || isConst(e)):
+						member.addMeta(':isVar');
 					case FVar(t, e):
-						if (e != null) {
-							member.kind = FVar(t = getType(t, e), null);
-							DirectInitialization.member(ctx, member, t, e);
-						}
+						member.kind = FVar(t = getType(t, e), null);
+						DirectInitialization.member(ctx, member, t, e);
 					case FProp(get, set, t, e):
-						if (e != null) {
-							member.kind = FProp(get, set, t = getType(t, e), null);
-							DirectInitialization.member(ctx, member, t, e);
-						}						
+						member.kind = FProp(get, set, t = getType(t, e), null);
+						DirectInitialization.member(ctx, member, t, e);					
 					default:
 				}
 		}
