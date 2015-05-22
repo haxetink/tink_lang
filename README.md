@@ -1152,7 +1152,7 @@ switch value {
 Put together with a destructuring loop:
 
 ```
-var fruit:Array<Dynamic> = [new Apple(), new Apple(), new Banana(), new Apple(), new Kiwi()];
+var fruit:Array<Any> = [new Apple(), new Apple(), new Banana(), new Apple(), new Kiwi()];
 var apples = [for ((a : Apple) in fruit) a];
 trace(apples.length);//3
 ```
