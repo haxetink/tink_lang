@@ -26,6 +26,8 @@ class ExtendedLoops {
 			];
 	
 	static function doComprehension(head:Expr, body:Expr, pos:Position, yielder:Array<Expr>->Position->Expr, init:Expr) {
+		if (init == null) 
+			init = macro @:pos(pos) [];
 		
 		function doYield(e:Expr) {
 			if (yielder == null) 
@@ -39,8 +41,6 @@ class ExtendedLoops {
 								return macro @:pos(pos) __tmp.set($a{args});
 							
 						default:
-							
-							init = macro [];
 							
 							function (args, pos) 
 								return macro @:pos(pos) __tmp.push($a{args});
@@ -60,7 +60,6 @@ class ExtendedLoops {
 		
 		if (!yieldOccurred)
 			body = body.yield(doYield);
-			
 		return macro @:pos(pos) {
 			var __tmp = $init;
 			for ($head) $body;

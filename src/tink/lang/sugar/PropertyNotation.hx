@@ -9,6 +9,7 @@ class PropertyNotation {
 	static public inline var PROP = ':prop';
 	static public inline var READ = ':read';
 	static public inline var CALC = ':calc';
+	static public inline var LAZY = ':lazy';
 	
 	static var aliases = [
 		':property' => PROP,
@@ -21,7 +22,7 @@ class PropertyNotation {
 	
 	static public function make(m:Member, t:ComplexType, getter:Expr, setter:Null<Expr>, hasField:String->Bool, addField:Member->?Bool->Member, ?e:Expr) {
 		var get = 'get_' + m.name,
-			set = if (setter == null) 'null' else 'set_' + m.name;
+				set = if (setter == null) 'null' else 'set_' + m.name;
 		var acc = [];
 		function mk(gen:Member) {
 			acc.push(gen);
@@ -66,7 +67,28 @@ class PropertyNotation {
 								if (aliases.exists(m.name))
 									m.name = aliases[m.name];
 					}
-					
+					switch member.extractMeta(LAZY) {
+						case Success(tag):
+							if (e == null)
+								member.pos.error('no expression given');
+							if (t == null)
+								t = switch e.typeof() {
+									case Success(t): t.toComplex();
+									case Failure(_): e.pos.makeBlankType();
+								}
+								
+							var lazyField = 'lazy_' + member.name;
+							add(({
+								pos: member.pos,
+								name: lazyField,
+								kind: FVar(macro : tink.core.Lazy<$t>, macro @:pos(e.pos) tink.core.Lazy.ofFunc(function () return $e)),
+								meta: [{ name: ':noCompletion', params: [], pos: member.pos }]
+							}:Field), true);
+							
+							e = macro @:pos(e.pos) $i{lazyField}.get();
+							member.addMeta(CALC);
+						default:
+					}
 					switch member.extractMeta(CALC) {
 						case Success(tag):
 							if (e == null)

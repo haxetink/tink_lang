@@ -147,7 +147,7 @@ class Sugar {
 			
 			function appliesTo(c:ClassBuilder)
 				return c.target.meta.has(':tink');
-					
+				
 			function queue<T>(queue:Queue<T>, items:Array<Pair<String, T>>, ?addFirst) {				
 				var first = items.shift();
 				if (first == null)
@@ -168,7 +168,8 @@ class Sugar {
 			
 			{
 				var p = function (a, b)
-					return p(a, function (c:ClassBuilder) if (appliesTo(c)) b(c));
+					return 
+						p(a, function (c:ClassBuilder) return if (appliesTo(c)) { b(c); true; } else false);
 					
 				queue(SyntaxHub.classLevel, [
 					p('Notifiers', Notifiers.apply),
@@ -182,16 +183,20 @@ class Sugar {
 					function (_) return true, //this is a little aggressive but I see no reason why it should happen sooner
 					function (c:ClassBuilder) {
 						if (c.target.isInterface && !appliesTo(c))
-							return;
+							return false;
 						
 						if (!appliesTo(c)) {
 							for (i in c.target.interfaces)
 								if (i.t.get().meta.has(':tink')) {
 									PartialImplementation.apply(c);
-									break;
+									return true;
 								}
+							return false;
 						}
-						else PartialImplementation.apply(c);
+						else {
+							PartialImplementation.apply(c);
+							return true;
+						}
 					}
 				);
 			}	
