@@ -1,6 +1,6 @@
 # Tinkerbell Language Extensions
 
-Tinkerbell comes with all kinds of sugar to allow writing terser code,.
+Tinkerbell comes with all kinds of sugar to allow writing terser code.
 
 The sugar is added on a per-class basis:
 
@@ -111,7 +111,7 @@ interface Enumerable<T> implements tink.Lang {
 
 The implementation will be "cut" and "pasted" into classes that implement the interface without providing their own implementation. It is important to understand this metaphor: The process happens at expression level and in some sense is quite similar to C++ templates. For example the implementation of `forEach` only requires that the final class be eligible as a for loop target. That can mean it's an Iterator, an Iterable or has a length and array access.
 
-The partial implementation can basically refer to any identifier. They only need to exist in the final class scope. Please note that if the "pasted" expression leads to a type error, the final class is the best error position we can give. That is about the same quality as saying that the class does not implement a certain method required by one of its interfaces. None the less, it can still be more misleading.
+The partial implementation can basically refer to any identifier. They only need to exist in the final class scope. Please note that if the "pasted" expression leads to a type error, the final class is the best error position we can give. That is about the same quality as saying that the class does not implement a certain method required by one of its interfaces. Nonetheless, it can still be more misleading.
 
 ### On demand implementation
 
