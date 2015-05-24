@@ -137,7 +137,7 @@ As a corrolary, an implicit return of a loop will not lead to meaningful code.
 Tink allows for partial implementations, that are quite similar to traits. Partial implementations are always declared as interfaces, that actually have an implementation. We'll take an example that might be familiar to Ruby programmers:
 
 ```haxe
-interface Enumerable<T> implements tink.Lang {
+@:tink interface Enumerable<T> {
     var length(get, never):Int;
     function get_length()
         return fold(0, function (count, _) return count + 1);
@@ -174,7 +174,7 @@ In some cases, you want to say "if you use this implementation, then also add me
 To extend the example above:
 
 ```haxe
-interface Enumerable<T> implements tink.Lang {
+@:tink interface Enumerable<T> {
     @:usedOnlyBy(iterator) var elements:Array<T>;
     function iterator():Iterator<T> {
         return elements.iterator();
@@ -188,7 +188,7 @@ Now what this means is, that *if* the iterator implementation is taken from `Enu
 Note that we can go further:
 
 ```haxe
-interface Enumerable<T> implements tink.Lang {
+@:tink interface Enumerable<T> {
     @:usedOnlyBy(iterator) 
     var elements:Array<T>;
     @:usedOnlyBy(forEach)
@@ -204,7 +204,7 @@ interface Enumerable<T> implements tink.Lang {
 The above is rather hard to use, if `elements` is not initialized. Therefore we also define a default value:
 
 ```haxe
-interface Enumerable<T> implements tink.Lang {
+@:tink interface Enumerable<T> {
     @:usedOnlyBy(iterator) 
     var elements:Array<T> = [];
     @:usedOnlyBy(forEach)
@@ -416,7 +416,7 @@ Real world example:
 ```haxe
 import Math.*;
 
-class Point implements tink.Lang {
+@:tink class Point {
     static var counter = 0;
     
     @:property(max(param, 0)) var radius = .0;
@@ -503,7 +503,7 @@ This comes pretty close to [named parameters](http://en.wikipedia.org/wiki/Named
 To make defining signals and futures (and usually the associated triggers) easy, you can use the following syntax:
 
 ```haxe
-class Observable implements tink.Lang {
+@:tink class Observable {
     @:signal var click:MouseEvent;
     @:future var data:Bytes;
     @:signal var clickLeft = this.click.filter(function (e:MouseEvent) return e.x < this.width / 2);
@@ -514,7 +514,7 @@ class Observable implements tink.Lang {
 This will be converted as follows:
 
 ```haxe
-class Observable implements tink.Lang {
+@:tink class Observable {
     private var _click:SignalTrigger<MouseEvent>;
     private var _data:FutureTrigger<Bytes>;
     @:readonly var click:Signal<MouseEvent> = _click.toSignal();
@@ -535,7 +535,7 @@ You can use this syntax on interfaces also, which causes [partial implementation
 Tinkerbell supports syntactic delegation for both fields and methods. The basic idea is, that you can automatically have the delegating class call methods or access properties on the objects it is delegating to. In the simpler of two cases, the class delegates to one of its members. A very simple example:
 
 ```haxe
-class Stack<T> implements tink.Lang {
+@:tink class Stack<T> {
     @:forward(push, pop, iterator, length) var elements:Array<T>;
     public function new() {
         this.elements = [];
@@ -548,7 +548,7 @@ Here, we are forwarding the calls `push`, `pop`, `iterator` as well as the field
 Another example:
 
 ```haxe
-class OrderedStringMap<T> implements tink.Lang {
+@:tink class OrderedStringMap<T> {
     var keyList:Array<String> = [];
     @:forward var map:haxe.ds.StringMap<T> = new haxe.ds.StringMap<T>();
     public function new() {}
@@ -595,12 +595,12 @@ class Bar {
     public function doBar(a:A, b:B, c:C):R;
 }
 //and now we can do
-class FooBar implements tink.Lang {
+@:tink class FooBar {
     @:forward var foo:Foo;
     @:forward var bar:Bar;
 }
 //which corresponds to
-class FooBar implements tink.Lang {
+@:tink class FooBar {
     var foo:Foo;
     var bar:Bar;
     public function fooX(x) return foo.fooX(x)
@@ -616,7 +616,7 @@ This kind of forwarding may appear a little strange at first, but let's see it i
 
 ```haxe
 //Foo and Bar defined in the example above
-class FooBar2 implements tink.Lang {
+@:tink class FooBar2 {
     var fields:Hash<Dynamic>;
     @:forward function anyName(foo:Foo, bar:Bar) {
         get: fields.get($name),
@@ -629,7 +629,7 @@ class FooBar2 implements tink.Lang {
 This becomes (actually this is simplified for your convenience):
 
 ```haxe
-class Foobar2 implements tink.Lang {
+@:tink class Foobar2 {
     var fields:Hash<Dynamic>;
     public function fooX(x:X) trace('calling '+'fooX'+' on '+'foo'+' with '+[x])
     public function yFoo() trace('calling '+'yFoo'+' on '+'foo'+' with '+[])
