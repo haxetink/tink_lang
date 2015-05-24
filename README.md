@@ -4,7 +4,7 @@ Tinkerbell comes with all kinds of sugar to allow writing terser code.
 
 The sugar is added on a per-class basis:
 
-```
+```haxe
 @:tink class MyClass {
 }
 ```
@@ -17,58 +17,58 @@ Generally you should not use identifiers starting with `__tink_` to avoid confli
 
 <!-- START INDEX -->
 - [Declaration Sugar](#declaration-sugar)
-	- 
-		- 
-			- [Publishing](#publishing)
-			- [Inference](#inference)
-			- [Implicit Return](#implicit-return)
-	- [Partial implementation](#partial-implementation)
-		- [On demand implementation](#on-demand-implementation)
-		- [Default initialization](#default-initialization)
-		- [Partial implementation caveats and use cases](#partial-implementation-caveats-and-use-cases)
-	- [Property declaration](#property-declaration)
-		- [Pure calculated properties](#pure-calculated-properties)
-		- [Direct initialization](#direct-initialization)
-			- [Setter Bypass](#setter-bypass)
-		- [Lazy initialization](#lazy-initialization)
-		- [Property notation](#property-notation)
-			- [Readonly property](#readonly-property)
-			- [Readwrite properties](#readwrite-properties)
-	- [Complex Default Arguments](#complex-default-arguments)
-		- [Function options](#function-options)
-			- [Direct options](#direct-options)
-	- [Notifiers](#notifiers)
-		- [Signal/Future on interfaces](#signal/future-on-interfaces)
-	- [Syntactic Delegation](#syntactic-delegation)
-		- [Delegation filters](#delegation-filters)
-		- [Delegation to member](#delegation-to-member)
-		- [Delegation to method](#delegation-to-method)
-		- [Delegation rules](#delegation-rules)
-		- [Delegation on interfaces](#delegation-on-interfaces)
+    - 
+        - 
+            - [Publishing](#publishing)
+            - [Inference](#inference)
+            - [Implicit Return](#implicit-return)
+    - [Partial implementation](#partial-implementation)
+        - [On demand implementation](#on-demand-implementation)
+        - [Default initialization](#default-initialization)
+        - [Partial implementation caveats and use cases](#partial-implementation-caveats-and-use-cases)
+    - [Property declaration](#property-declaration)
+        - [Pure calculated properties](#pure-calculated-properties)
+        - [Direct initialization](#direct-initialization)
+            - [Setter Bypass](#setter-bypass)
+        - [Lazy initialization](#lazy-initialization)
+        - [Property notation](#property-notation)
+            - [Readonly property](#readonly-property)
+            - [Readwrite properties](#readwrite-properties)
+    - [Complex Default Arguments](#complex-default-arguments)
+        - [Function options](#function-options)
+            - [Direct options](#direct-options)
+    - [Notifiers](#notifiers)
+        - [Signal/Future on interfaces](#signal/future-on-interfaces)
+    - [Syntactic Delegation](#syntactic-delegation)
+        - [Delegation filters](#delegation-filters)
+        - [Delegation to member](#delegation-to-member)
+        - [Delegation to method](#delegation-to-method)
+        - [Delegation rules](#delegation-rules)
+        - [Delegation on interfaces](#delegation-on-interfaces)
 - [Implementation Sugar](#implementation-sugar)
-	- [Extended For Loops](#extended-for-loops)
-		- [Arbitrary steps](#arbitrary-steps)
-		- [Key-value loops](#key-value-loops)
-		- [Destructuring loops](#destructuring-loops)
-		- [Parallel loops](#parallel-loops)
-			- [Loop Fallbacks](#loop-fallbacks)
-		- [Extended comprehensions](#extended-comprehensions)
-			- [Complex bodies](#complex-bodies)
-			- [Alternative output](#alternative-output)
-			- [Manual yielding](#manual-yielding)
-	- [Trailing arguments](#trailing-arguments)
-	- [Short lambdas](#short-lambdas)
-		- [Arrow lambda](#arrow-lambda)
-		- [Do procedures](#do-procedures)
-		- [F functions](#f-functions)
-		- [Matchers](#matchers)
-			- [Multi argument matchers](#multi-argument-matchers)
-	- [Handlers](#handlers)
-		- [When and Whenever](#when-and-whenever)
-		- [In and Every](#in-and-every)
-	- [Array Rest Pattern](#array-rest-pattern)
-	- [Type switch](#type-switch)
-	- [Default](#default)
+    - [Extended For Loops](#extended-for-loops)
+        - [Arbitrary steps](#arbitrary-steps)
+        - [Key-value loops](#key-value-loops)
+        - [Destructuring loops](#destructuring-loops)
+        - [Parallel loops](#parallel-loops)
+            - [Loop Fallbacks](#loop-fallbacks)
+        - [Extended comprehensions](#extended-comprehensions)
+            - [Complex bodies](#complex-bodies)
+            - [Alternative output](#alternative-output)
+            - [Manual yielding](#manual-yielding)
+    - [Trailing arguments](#trailing-arguments)
+    - [Short lambdas](#short-lambdas)
+        - [Arrow lambda](#arrow-lambda)
+        - [Do procedures](#do-procedures)
+        - [F functions](#f-functions)
+        - [Matchers](#matchers)
+            - [Multi argument matchers](#multi-argument-matchers)
+    - [Handlers](#handlers)
+        - [When and Whenever](#when-and-whenever)
+        - [In and Every](#in-and-every)
+    - [Array Rest Pattern](#array-rest-pattern)
+    - [Type switch](#type-switch)
+    - [Default](#default)
 
 <!-- END INDEX -->
 
@@ -92,34 +92,34 @@ The strategy is all-or-nothing, i.e. if you have *no* return statements, tink wi
 
 Examples:
 
-```
+```haxe
 {
-	if (foo) return 5;
-	x;
-	y;
-	z;
+    if (foo) return 5;
+    x;
+    y;
+    z;
 }
 ```
 
 This will not be touched and will ultimately result in a type error like "Void should be Int".
 
-```
+```haxe
 if (foo) 5;
 else {
-	x;
-	y;
-	z;
+    x;
+    y;
+    z;
 }
 ```
 
 This will be transformed into:
 
-```
+```haxe
 if (foo) return 5;
 else {
-	x;
-	y;
-	return z;
+    x;
+    y;
+    return z;
 }
 ```
 
@@ -136,30 +136,30 @@ As a corrolary, an implicit return of a loop will not lead to meaningful code.
 
 Tink allows for partial implementations, that are quite similar to traits. Partial implementations are always declared as interfaces, that actually have an implementation. We'll take an example that might be familiar to Ruby programmers:
 
-```
+```haxe
 interface Enumerable<T> implements tink.Lang {
-	var length(get, never):Int;
-	function get_length()
-		return fold(0, function (count, _) return count + 1);
-		
-	function fold<A>(init:A, calc:A->T->A):A {
-		forEach(function (v) init = calc(init, v));
-		return init;
-	}
-	function forEach(f:T->Void):Void {
-		for (v in this)
-			f(v);
-	}
-	function map<A>(f:T->A):Array<A> {
-		var ret = [];
-		forEach(ret.push);
-		return ret;
-	}
-	function filter<A>(f:T->Bool):Array<T> {
-		var ret = [];
-		forEach(function (v) if (f(v)) ret.push(v));
-		return ret;
-	}
+    var length(get, never):Int;
+    function get_length()
+        return fold(0, function (count, _) return count + 1);
+        
+    function fold<A>(init:A, calc:A->T->A):A {
+        forEach(function (v) init = calc(init, v));
+        return init;
+    }
+    function forEach(f:T->Void):Void {
+        for (v in this)
+            f(v);
+    }
+    function map<A>(f:T->A):Array<A> {
+        var ret = [];
+        forEach(ret.push);
+        return ret;
+    }
+    function filter<A>(f:T->Bool):Array<T> {
+        var ret = [];
+        forEach(function (v) if (f(v)) ret.push(v));
+        return ret;
+    }
 }
 ```
 
@@ -173,13 +173,13 @@ In some cases, you want to say "if you use this implementation, then also add me
 
 To extend the example above:
 
-```
+```haxe
 interface Enumerable<T> implements tink.Lang {
-	@:usedOnlyBy(iterator) var elements:Array<T>;
-	function iterator():Iterator<T> {
-		return elements.iterator();
-	}
-	/* see above for the rest */
+    @:usedOnlyBy(iterator) var elements:Array<T>;
+    function iterator():Iterator<T> {
+        return elements.iterator();
+    }
+    /* see above for the rest */
 }
 ```
 
@@ -187,15 +187,15 @@ Now what this means is, that *if* the iterator implementation is taken from `Enu
 
 Note that we can go further:
 
-```
+```haxe
 interface Enumerable<T> implements tink.Lang {
-	@:usedOnlyBy(iterator) 
-	var elements:Array<T>;
-	@:usedOnlyBy(forEach)
-	public function iterator():Iterator<T> {
-		return elements.iterator();
-	}
-	/* see above for the rest */
+    @:usedOnlyBy(iterator) 
+    var elements:Array<T>;
+    @:usedOnlyBy(forEach)
+    public function iterator():Iterator<T> {
+        return elements.iterator();
+    }
+    /* see above for the rest */
 }
 ```
 
@@ -203,15 +203,15 @@ interface Enumerable<T> implements tink.Lang {
 
 The above is rather hard to use, if `elements` is not initialized. Therefore we also define a default value:
 
-```
+```haxe
 interface Enumerable<T> implements tink.Lang {
-	@:usedOnlyBy(iterator) 
-	var elements:Array<T> = [];
-	@:usedOnlyBy(forEach)
-	function iterator():Iterator<T> {
-		return elements.iterator();
-	}
-	/* see above for the rest */
+    @:usedOnlyBy(iterator) 
+    var elements:Array<T> = [];
+    @:usedOnlyBy(forEach)
+    function iterator():Iterator<T> {
+        return elements.iterator();
+    }
+    /* see above for the rest */
 }
 ```
 
@@ -227,9 +227,9 @@ This feature should be used sparsingly. Composition is preferable (check out [sy
 
 To expand on the second case:
 
-```
+```haxe
 interface Identifiable {
-	var id(default, null):Int = Id.generate();
+    var id(default, null):Int = Id.generate();
 }
 ```
 
@@ -243,21 +243,21 @@ To some extent, this is also an advantage of this feature. You may for example h
 
 Say you have this:
 
-```
+```haxe
 class ArrayMapExtension {
-	static public function exists<A>(arr:Array<A>, key:Int):Bool
-		return key > -1 && key < arr.length;
-	static public function keys<A>(arr:Array<A>):Iterator<Int>
-		return 0...arr.length;
+    static public function exists<A>(arr:Array<A>, key:Int):Bool
+        return key > -1 && key < arr.length;
+    static public function keys<A>(arr:Array<A>):Iterator<Int>
+        return 0...arr.length;
 }
 ```
 
 If you were `using` this, then an array can easily act as a read-only map.
 
-```
+```haxe
 interface PairMaker<K, V, T> {
-	function make(target:T):Array<Pair<K, V>>
-		return [for (i in target.keys()) new Pair(i, target[i])]
+    function make(target:T):Array<Pair<K, V>>
+        return [for (i in target.keys()) new Pair(i, target[i])]
 }
 
 class IntMapPairMaker<V> implements PairMaker<Int, V, Map<Int, V>> {}
@@ -275,7 +275,7 @@ Finally, it should be noted that like `@:generic`, partial implementations will 
 
 You can declare purely calculated properties like this:
 
-```
+```haxe
 @:calculated var field:SomeType = someExpr;
 ```
 
@@ -283,7 +283,7 @@ Calculated properties are [published](#publishing) and can be [infered](#inferen
 
 The above code will simply translate into:
 
-```
+```haxe
 public var field(get, never):SomeType;
 function get_field():SomeType someExpr;
 ```
@@ -292,24 +292,24 @@ Return statements are [added implicitly](#implicit-return) to the getter. You ca
 
 Here's what happens if we use all of these together:
 
-```
+```haxe
 @:calc inline var data = if (Config.IS_LIVE) Data.LIVE else Data.TEST;
 ```
 
 Assuming `Data.LIVE` and `Data.TEST` are of type `Foo`, this becomes:
 
-```
+```haxe
 public var data(get, never):Foo;
 inline function get_data()
-	if (Config.IS_LIVE) return Data.LIVE;
-	else return Data.TEST;
+    if (Config.IS_LIVE) return Data.LIVE;
+    else return Data.TEST;
 ```
 
 ### Direct initialization
 
 Tink allows directly initializing fields with three different options:
 
-```
+```haxe
 var a:A = _;
 var b:B = (defaultB);
 var c:C = constantC;
@@ -339,13 +339,13 @@ If you don't want setter bypass, initialize the field the old fashioned way - in
 
 You can define lazily initialized fields using the `@:lazy` metadata. The implementation relies on defining an additional `tink.core.Lazy` under `lazy_<fieldName>`. Example:
 
-```
+```haxe
 @:lazy var x = [1,2,3,4];
 ```
 
 This corresponds to:
-	
-```
+    
+```haxe
 @:noCompletion var lazy_x:tink.core.Lazy<Array<Int>> = tink.core.Lazy.ofFunc(function () return [1,2,3,4])
 @:calc var x:Array<Int> = lazy_x.get();
 ```
@@ -356,7 +356,7 @@ This corresponds to:
 
 To denote readonly properties with a getter, you can use this syntax:
 
-```
+```haxe
 @:readonly var x:X;
 
 @:readonly(someExpr) var y:Y;
@@ -364,7 +364,7 @@ To denote readonly properties with a getter, you can use this syntax:
 
 Which is converted to:
 
-```
+```haxe
 public var x(get, null):X;
 function get_x():X return x;
 
@@ -379,7 +379,7 @@ Also, `@:read` is a recognized shortcut and you can use `inline` to cause the ge
 
 Similarly, you can define properties with both getter and setter:
 
-```
+```haxe
 @:property var a:A;
 
 @:property(guard) var b:B;
@@ -389,7 +389,7 @@ Similarly, you can define properties with both getter and setter:
 
 This will be converted into:
 
-```
+```haxe
 @:isVar public var a(get, set):A;
 function get_a() return this.a;
 function set_a(param) return this.a = param;
@@ -413,26 +413,26 @@ We have 3 different cases here:
 
 Real world example:
 
-```
+```haxe
 import Math.*;
 
 class Point implements tink.Lang {
-	static var counter = 0;
-	
-	@:property(max(param, 0)) var radius = .0;
-	
-	@:property(param % (PI * 2)) var angle = .0;
-	
-	@:property var name:String = 'P'+counter++;
-	
-	@:property(cos(angle) * radius, { setCartesian(param, y); param; }) var x:Float;
-	
-	@:property(sin(angle) * radius, { setCartesian(x, param); param; }) var y:Float;
-	
-	function setCartesian(x, y) {
-		this.angle = atan2(y, x);
-		this.radius = sqrt(x*x + y*y);
-	}
+    static var counter = 0;
+    
+    @:property(max(param, 0)) var radius = .0;
+    
+    @:property(param % (PI * 2)) var angle = .0;
+    
+    @:property var name:String = 'P'+counter++;
+    
+    @:property(cos(angle) * radius, { setCartesian(param, y); param; }) var x:Float;
+    
+    @:property(sin(angle) * radius, { setCartesian(x, param); param; }) var y:Float;
+    
+    function setCartesian(x, y) {
+        this.angle = atan2(y, x);
+        this.radius = sqrt(x*x + y*y);
+    }
 }
 ```
 
@@ -442,9 +442,9 @@ So here we have a point that is internally represented in polar coordinates, tha
 
 Tink allows for arbitrary default arguments. Note that the expression will be evaluated for every function call. The generated code is similar to that generated by Haxe for simple default arguments (i.e. when `null` is passed, then the default value is applied). Example:
 
-```
+```haxe
 function prophanityFilter(text:String, blacklist:Array<String> = haxe.Resource.getString('blacklist').split('\n)) {
-	//...
+    //...
 }
 ```
 
@@ -454,7 +454,7 @@ As you can see, that works well.
 
 Default arguments that are anonymous objects are treated specially in that each of their properties can be optional and those that are passed are merged with the defaults.
 
-```
+```haxe
 function mysqlConnect(options = { host: 'localhost', port: 3306, user: _, password: _, database: 'test' }) {}
 
 //which can be called like so:
@@ -466,9 +466,9 @@ mysqlConnect({ user: 'u3405', password: 'cpej3051', host: 'foo.dbserver.com' });
 //because it is transformed to this:
 
 function mysqlConnect(options: { ?host: String, ?port: Int, user:Unknown, password:Unknwon, ?database:String }) {
-	if (options.host == null) options.host = 'localhost';
-	if (options.port == null) options.port = 3306;
-	if (options.database == null) options.database = 'test';
+    if (options.host == null) options.host = 'localhost';
+    if (options.port == null) options.port = 3306;
+    if (options.database == null) options.database = 'test';
 }
 ```
 
@@ -483,16 +483,16 @@ This kind of signature is useful to pass many options to a single function, henc
 
 If you don't wish to actually have an object holding the options, but rather variables directly, you can use this:
 
-```
+```haxe
 function bar(_ = { x: someX, y:someY, ...}) 
-	body;
+    body;
 
 //becomes
 
 function bar(?_:{?x:X,?y:Y}) {
-	var x = if (_ == null || _.x == null) someX else _.x;
-	var y = if (_ == null || _.y == null) someY else _.y;
-	body;
+    var x = if (_ == null || _.x == null) someX else _.x;
+    var y = if (_ == null || _.y == null) someY else _.y;
+    body;
 }
 ```
 
@@ -502,25 +502,25 @@ This comes pretty close to [named parameters](http://en.wikipedia.org/wiki/Named
 
 To make defining signals and futures (and usually the associated triggers) easy, you can use the following syntax:
 
-```
+```haxe
 class Observable implements tink.Lang {
-	@:signal var click:MouseEvent;
-	@:future var data:Bytes;
-	@:signal var clickLeft = this.click.filter(function (e:MouseEvent) return e.x < this.width / 2);
-	@:future var jsonData = this.data.map(function (b:Bytes) return b.toString()).map(haxe.Json.parse);
+    @:signal var click:MouseEvent;
+    @:future var data:Bytes;
+    @:signal var clickLeft = this.click.filter(function (e:MouseEvent) return e.x < this.width / 2);
+    @:future var jsonData = this.data.map(function (b:Bytes) return b.toString()).map(haxe.Json.parse);
 }
 ```
 
 This will be converted as follows:
 
-```
+```haxe
 class Observable implements tink.Lang {
-	private var _click:SignalTrigger<MouseEvent>;
-	private var _data:FutureTrigger<Bytes>;
-	@:readonly var click:Signal<MouseEvent> = _click.toSignal();
-	@:readonly var data:Future<Bytes> = _data.toFuture();
-	@:readonly var clickLeft = this.click.filter(function (e) e.x < this.width / 2);
-	@:readonly var jsonData = this.data.map(function (b) return b.toString()).map(haxe.Json.parse);
+    private var _click:SignalTrigger<MouseEvent>;
+    private var _data:FutureTrigger<Bytes>;
+    @:readonly var click:Signal<MouseEvent> = _click.toSignal();
+    @:readonly var data:Future<Bytes> = _data.toFuture();
+    @:readonly var clickLeft = this.click.filter(function (e) e.x < this.width / 2);
+    @:readonly var jsonData = this.data.map(function (b) return b.toString()).map(haxe.Json.parse);
 }
 ```
 
@@ -534,12 +534,12 @@ You can use this syntax on interfaces also, which causes [partial implementation
 
 Tinkerbell supports syntactic delegation for both fields and methods. The basic idea is, that you can automatically have the delegating class call methods or access properties on the objects it is delegating to. In the simpler of two cases, the class delegates to one of its members. A very simple example:
 
-```
+```haxe
 class Stack<T> implements tink.Lang {
-	@:forward(push, pop, iterator, length) var elements:Array<T>;
-	public function new() {
-		this.elements = [];
-	}
+    @:forward(push, pop, iterator, length) var elements:Array<T>;
+    public function new() {
+        this.elements = [];
+    }
 }
 ```
 
@@ -547,20 +547,20 @@ Here, we are forwarding the calls `push`, `pop`, `iterator` as well as the field
 
 Another example:
 
-```
+```haxe
 class OrderedStringMap<T> implements tink.Lang {
-	var keyList:Array<String> = [];
-	@:forward var map:haxe.ds.StringMap<T> = new haxe.ds.StringMap<T>();
-	public function new() {}
-	public function set(key:String, value:T) 
-		if (!exists(key)) {
-			keyList.push(key);
-			map.set(key, value);
-		}
-	public function remove(key:String) 
-		return map.remove(key) && keyList.remove(key)
-	public function keys() 
-		return keyList.iterator()
+    var keyList:Array<String> = [];
+    @:forward var map:haxe.ds.StringMap<T> = new haxe.ds.StringMap<T>();
+    public function new() {}
+    public function set(key:String, value:T) 
+        if (!exists(key)) {
+            keyList.push(key);
+            map.set(key, value);
+        }
+    public function remove(key:String) 
+        return map.remove(key) && keyList.remove(key)
+    public function keys() 
+        return keyList.iterator()
 }
 ```
 
@@ -584,29 +584,29 @@ Also `@:fwd` is a recognized shortcut for `@:forward`.
 
 Usage example:
 
-```
+```haxe
 //let's take two sample classes
 class Foo {
-	public function fooX(x:X):Void;
-	public function yFoo():Y;
+    public function fooX(x:X):Void;
+    public function yFoo():Y;
 }
 class Bar {
-	public var barVar:V;
-	public function doBar(a:A, b:B, c:C):R;
+    public var barVar:V;
+    public function doBar(a:A, b:B, c:C):R;
 }
 //and now we can do
 class FooBar implements tink.Lang {
-	@:forward var foo:Foo;
-	@:forward var bar:Bar;
+    @:forward var foo:Foo;
+    @:forward var bar:Bar;
 }
 //which corresponds to
 class FooBar implements tink.Lang {
-	var foo:Foo;
-	var bar:Bar;
-	public function fooX(x) return foo.fooX(x)
-	public function yFoo() return foo.yFoo()
-	@:prop(bar.barVar, bar.barVar = param) var barVar:V;//see property notation
-	public function doBar(a, b, c) return bar.doBar(a,b,c)
+    var foo:Foo;
+    var bar:Bar;
+    public function fooX(x) return foo.fooX(x)
+    public function yFoo() return foo.yFoo()
+    @:prop(bar.barVar, bar.barVar = param) var barVar:V;//see property notation
+    public function doBar(a, b, c) return bar.doBar(a,b,c)
 }
 ```
 
@@ -614,27 +614,27 @@ class FooBar implements tink.Lang {
 
 This kind of forwarding may appear a little strange at first, but let's see it in action:
 
-```
+```haxe
 //Foo and Bar defined in the example above
 class FooBar2 implements tink.Lang {
-	var fields:Hash<Dynamic>;
-	@:forward function anyName(foo:Foo, bar:Bar) {
-		get: fields.get($name),
-		set: fields.set($name, param),
-		call: trace('calling '+$name+' on '+$id+' with '+$args)
-	}
+    var fields:Hash<Dynamic>;
+    @:forward function anyName(foo:Foo, bar:Bar) {
+        get: fields.get($name),
+        set: fields.set($name, param),
+        call: trace('calling '+$name+' on '+$id+' with '+$args)
+    }
 }
 ```
 
 This becomes (actually this is simplified for your convenience):
 
-```
+```haxe
 class Foobar2 implements tink.Lang {
-	var fields:Hash<Dynamic>;
-	public function fooX(x:X) trace('calling '+'fooX'+' on '+'foo'+' with '+[x])
-	public function yFoo() trace('calling '+'yFoo'+' on '+'foo'+' with '+[])
-	@:prop(fields.get('barVar'), fields.set('barVar', param)) var barVar:V;//see accessor generation
-	public function doBar(a:A, b:B, c:C) trace('calling '+'doBar'+' on '+'bar'+' with '+[a, b, c])
+    var fields:Hash<Dynamic>;
+    public function fooX(x:X) trace('calling '+'fooX'+' on '+'foo'+' with '+[x])
+    public function yFoo() trace('calling '+'yFoo'+' on '+'foo'+' with '+[])
+    @:prop(fields.get('barVar'), fields.set('barVar', param)) var barVar:V;//see accessor generation
+    public function doBar(a:A, b:B, c:C) trace('calling '+'doBar'+' on '+'bar'+' with '+[a, b, c])
 }
 ```
 
@@ -659,7 +659,7 @@ This kind of syntactic sugar works at expression level, i.e. in function bodies.
 
 Loops with arbitrary steps are denoted as follows:
 
-```
+```haxe
 //upward
 for (i += step in min...max) body;
 //downward
@@ -676,13 +676,13 @@ Using this syntax will cause generation of a while loop.
 
 This syntax is also supported:
 
-```
+```haxe
 for (key => value in target) body;
 ```
 
 It will just be translated into:
 
-```
+```haxe
 for (key in target.keys()) {
     var value = target.get(key);
     body;
@@ -695,19 +695,19 @@ If `target` doesn't actually have a compatible `keys` or `get` method a type err
 
 If you wish to run a loop only to destructure the items right away, you can use this syntax:
 
-```
+```haxe
 for (pattern in target) body;
 //which is equivalent to
 for (tmp in target)
   switch tmp {
-		case pattern: body;
-		default:
-	}
+        case pattern: body;
+        default:
+    }
 ```
 
 Here is an example:
 
-```
+```haxe
 var a = [Left(4), Right('foo'), Right('bar'), Left(5), Left(6)];
 
 trace([for (Left(x) in a) x]);//[4, 5, 6]
@@ -716,13 +716,13 @@ trace([for (Right(x) in a) x]);//['foo', 'bar']
 
 You may notice that `pattern` being an identifier is indeed just a special case of this rule.
 
-```
+```haxe
 for (v in 0...100) {}
 //is equivalent to:
 for (tmp in 0...100) 
-	switch tmp {
-		case v: //this matches everything
-	}
+    switch tmp {
+        case v: //this matches everything
+    }
 ```
 
 However, to keep the code simple, tink does not generate the switch statement for mere identifiers.
@@ -731,7 +731,7 @@ However, to keep the code simple, tink does not generate the switch statement fo
 
 Sometimes you want to iterate over multiple targets at once. Tink supports this syntax:
 
-```
+```haxe
 for ([head1, head2, head3]) body;
 ```
 
@@ -739,21 +739,25 @@ Here `head1`, `head2` and `head3` can be normal loop heads (`variable in express
 
 Example:
 
-```
+```haxe
 for ([ship in ships, i -= 1 in ships.length...0])
-	ship.x = 30 * i;
+    ship.x = 30 * i;
 ```
 
 This will order the ships in your array from right to left.
 
 By default, a parallel loop will stop as soon as any head is "depleted". Another example, to show just that:
 
-```
+```haxe
 var girls = ['Lilly', 'Peggy', 'Sue'];
 var boys = ['Peter', 'Paul', 'Joe', 'John', 'Jack'];
 for ([girl in girls, boy in boys])
     trace(girl + ' loves ' + boy);
--- OUTPUT:
+```
+
+Output:
+
+```
 Lilly loves Peter
 Peggy loves Paul
 Sue loves Joe
@@ -761,12 +765,16 @@ Sue loves Joe
 
 Now that's really unfortunate for John and Jack. Luckily there's one person they can always lean on: 
 
-```
+```haxe
 var girls = ['Lilly', 'Peggy', 'Sue'];
 var boys = ['Peter', 'Paul', 'Joe', 'John', 'Jack'];
 for ([girl in girls || 'Mommy', boy in boys])
     trace(girl + ' loves ' + boy);
--- OUTPUT:
+```
+
+Output:
+
+```
 Lilly loves Peter
 Peggy loves Paul
 Sue loves Joe
@@ -778,14 +786,18 @@ Mommy loves Jack
 
 As we see in the example just above, we can provide *fallbacks* for parallel loops. We simply use `||` for this. As soon as a loop target is depleted, the fallback expression is used instead. Please note that the expression is evaluated *every time* a fallback value is needed. Example:
 
-```
+```haxe
 var girls = ['Lilly', 'Peggy', 'Sue'];
 var boys = ['Peter', 'Paul', 'Joe', 'John', 'Jack', 'Jeff', 'Josh'];
 var index = 0;
 var family = ['Mommy', 'Grandma', 'Aunt Lilly'];
 for ([girl in girls || family[index++ % family.length], boy in boys])
     trace(girl + ' loves ' + boy);
--- OUTPUT:
+```
+
+Output:
+
+```
 Lilly loves Peter
 Peggy loves Paul
 Sue loves Joe
@@ -809,40 +821,40 @@ Haxe comprehensions are rather narrow in what they accept as bodies. In a number
 
 Example with `switch`:
 
-```
+```haxe
 var x = [true, false, true];
 
 trace([for (x in x)
-	if (x) 1;
+    if (x) 1;
 ]);//[1, 1]
 
 var x = [true, false, true];
 trace([for (x in x)
-	switch x {
-		case true: 1;
-		default:
-	}
+    switch x {
+        case true: 1;
+        default:
+    }
 ]);//[1, 1] with tink_lang, compiler error "Void should be Int" with vanilla Haxe 
 ```
 
 Example with arbitrary `if`:
 
-```
+```haxe
 typedef Person = { name: String, age:Int, male:Bool }
 enum Rescued {
-	Woman(person:Person);
-	Child(person:Person);
+    Woman(person:Person);
+    Child(person:Person);
 }
 
 var crew:Array<Person> = [
-	{ name : 'Joe', age: 25, male: true }, 
-	{ name : 'Jane', age: 24, male: false }, 
-	{ name: 'Timmy', age: 8, male: true }
+    { name : 'Joe', age: 25, male: true }, 
+    { name : 'Jane', age: 24, male: false }, 
+    { name: 'Timmy', age: 8, male: true }
 ];
 
 var womenAndChildren = [for (person in crew)
-	if (person.age < 18) Child(person)
-	else if (!person.male) Woman(person)
+    if (person.age < 18) Child(person)
+    else if (!person.male) Woman(person)
 ];
 ```
 
@@ -856,17 +868,17 @@ Haxe comprehensions can only construct maps or arrays. Tink comprehensions have 
 
 The general structure of a tink comprehension is:
 
-```
+```haxe
 target.method(for (head) body)
 ```
 
 This gets translated to something like
 
-```
+```haxe
 {
-	var tmp = target;
-	for (head) bodyCallingMethod;
-	tmp;
+    var tmp = target;
+    for (head) bodyCallingMethod;
+    tmp;
 }
 ```
 
@@ -874,18 +886,18 @@ Where the body is transformed so that the leaf expressions call `tmp.method`.
 
 If the method requires more than one argument, you can use `_(arg1, arg2, arg3)` to yield multiple values. Example:
 
-```
+```haxe
 var peopleByName = new Map().set(for (person in people) _(person.name, person));
 ```
 
 This is translated into:
 
-```
+```haxe
 var peopleByName = {
-	var tmp = new Map();
-	for (person in people) 
-		tmp.set(person.name, person);
-	tmp;
+    var tmp = new Map();
+    for (person in people) 
+        tmp.set(person.name, person);
+    tmp;
 }
 ```
 
@@ -893,25 +905,25 @@ When tink encounters `[for (head) body]` it will simply translate it into `[].pu
 
 But if you need to output a list, you can do:
 
-```
+```haxe
 new List().add(for (i in 0...100) i)
 ```
 
 But you needn't *construct* the target. You can use an existing one. For example to draw a couple of rectangles on the same sprite:
 
-```
+```haxe
 sprite.graphics.drawRect(
-	for (i in 0...10) 
-		_(0, i*20, 100, 10)
+    for (i in 0...10) 
+        _(0, i*20, 100, 10)
 )
 ```
 
 Also, because the target is returned, you can chain stuff:
 
-```
+```haxe
 var upAndDown = new List()
-	.add(for (i in 0...5) i)
-	.add(for (i -= 1 in 5...0) i)
+    .add(for (i in 0...5) i)
+    .add(for (i -= 1 in 5...0) i)
 trace(upAndDown);//{0, 1, 2, 3, 4, 4, 3, 2, 1, 0}
 ```
 
@@ -919,11 +931,11 @@ trace(upAndDown);//{0, 1, 2, 3, 4, 4, 3, 2, 1, 0}
 
 If your loop body contains an expression such as `@yield $value`, then instead of gathering the result automatically, the comprehension will only add to the output what you yield, which allows you to have multiple results per loop iteration.
 
-```
+```haxe
 var ret = [for (i in 1...5) {
-	if (i == 1) @yield 0;
-	@yield -i;
-	@yield i;
+    if (i == 1) @yield 0;
+    @yield -i;
+    @yield i;
 }];
 trace(ret);//[0, -1, 1, -2, 2, -3, 3, -4, 4];
 ```
@@ -934,10 +946,10 @@ Because of Haxe's call syntax you can often find yourself in a situation where a
 
 Example use cases:
 
-```
+```haxe
 myButton.on('click') => function () {
-	trace('click!');
-	triggerSomeAction();
+    trace('click!');
+    triggerSomeAction();
 }
 
 sys.db.Mysql.connect() => { 
@@ -978,24 +990,24 @@ Please note that metadata has precedence over binary operations. So `@do x = 5` 
 
 Combined with [trailing arguments](#trailing-arguments), you can write things like:
 
-```
+```haxe
 myButton.on('click') => @do {
-	trace('click');
-	triggerSomeAction();
+    trace('click');
+    triggerSomeAction();
 }
 ```
 
 Or why not some nodejs code:
 
-```
+```haxe
 fs.readFile('config') => @do(error, data)
-	if (error != null) panic(error);
-	else
-		http.get(Json.parse(data).someURL) => @do(error, data)
-			if (error != null) panic(error);
-			else {
-				trace('we have the data')
-			}
+    if (error != null) panic(error);
+    else
+        http.get(Json.parse(data).someURL) => @do(error, data)
+            if (error != null) panic(error);
+            else {
+                trace('we have the data')
+            }
 ```
 
 ### F functions
@@ -1009,25 +1021,25 @@ Similarly to [do procedures](#do-procedure), `@f` will create a function:
 
 Another kind of short lambdas are "matchers", where the arguments are directly piped into a switch statement and therefore needn't be named (since you will capture the values you need in the respective case statements).
 
-```
+```haxe
 @do switch _ {
-	/* cases */
+    /* cases */
 }
 
 switch _ {
-	/* cases */
+    /* cases */
 }
 ```
 
 Which become:
 
-```
+```haxe
 function (tmp) switch tmp {
-	/* cases */
+    /* cases */
 }
 
 function (tmp) return switch tmp {
-	/* cases */
+    /* cases */
 }
 ```
 
@@ -1037,27 +1049,27 @@ For the sake of consistency `@f switch _ {}` is treated like `switch _ {}`.
 
 If you expect more than one argument, you can use `[_,_]`, `[_, _, _]` and so on:
 
-```
+```haxe
 // or alternatively
 @do switch [_, _] {
-	/* cases */
+    /* cases */
 }
 ```
 
 Each of which becomes:
 
-```
+```haxe
 function (tmp1, tmp2) switch [tmp1, tmp2] {
-	/* cases */
+    /* cases */
 }
 ```
 
 Put together with [trailing arguments](#trailing-arguments), you can write code like this:
 
-```
+```haxe
 someOp() => switch _ {
-	case Success(result):
-	case Failure(error):
+    case Success(result):
+    case Failure(error):
 }
 ```
 
@@ -1067,7 +1079,7 @@ As a counterpart to notifiers, you can use the following syntax to register hand
 
 ### When and Whenever
 
-```
+```haxe
 @when(someFuture) handler;
 @whenever(someSignal) handler;
 @until(someFutureOrSignal) someLink;
@@ -1075,7 +1087,7 @@ As a counterpart to notifiers, you can use the following syntax to register hand
 
 These are shortcuts for:
 
-```
+```haxe
 (someFuture : Future<Unknown>).handle(handler);
 (someSignal : Signal<Unknown>).handle(handler);
 (someFuture : Future<Unknown>).handle((someLink : CallbackLink));
@@ -1083,20 +1095,20 @@ These are shortcuts for:
 
 If you want to only listen to the next occurrence of a `Signal` here's how:
 
-```
+```haxe
 @when(someSignal.next()) handler;
 ```
 
 Here is how you would implement drag and drop in flash/NME/OpenFL:
 
-```
+```haxe
 class EventTools {
   static public function gets(target:EventDispatcher, event:String) {
-  	return Signal.ofClassical(
-  		target.addEventListener.bind(event),
-  		target.removeEventListener.bind(event),
-  		false
-  	);
+    return Signal.ofClassical(
+        target.addEventListener.bind(event),
+        target.removeEventListener.bind(event),
+        false
+    );
   }
 }
 
@@ -1119,7 +1131,7 @@ using EventTools;
 
 ### In and Every
 
-```
+```haxe
 @in(delay) handler;
 
 @every(interval) handler;
@@ -1127,7 +1139,7 @@ using EventTools;
 
 These get translated to:
 
-```
+```haxe
 (haxe.Timer.delay(handler, Std.int(delay * 1000)) : CallbackLink);
 
 {
@@ -1139,10 +1151,10 @@ These get translated to:
 
 Notice that the expression becomes a `CallbackLink` which allows us to use it with `@until`.
 
-```
+```haxe
 @whenever(button.pressed) @do {
   @until(button.released.next()) 
-  	@every(1) @do {
+    @every(1) @do {
       trace('tick');
     }
 }
@@ -1154,22 +1166,22 @@ Which reads as "whenever the button is pressed, until it is released the next ti
 
 Sometimes you want to pattern match against an array with specific entries at the start or the end and capture the rest. You can do this like so:
 
-```
+```haxe
 var uris = [
-	'foo/bar/x/y/z',
-	'foo/baz/bar',
-	'foo/bar',
+    'foo/bar/x/y/z',
+    'foo/baz/bar',
+    'foo/bar',
 ];
 for (i in 0...uris.length)
-	switch uris[i].split('/') {
-	  case ['foo', 'bar', @rest rest]:
-	  	trace(i+':'+rest);
-	  case ['foo', @rest rest, 'bar']:
-	  	trace(i+':'+rest);
-	  case [@rest rest, 'foo', 'bar']:
-	  	trace(i+':'+rest);
-	  default:
-	}
+    switch uris[i].split('/') {
+      case ['foo', 'bar', @rest rest]:
+        trace(i+':'+rest);
+      case ['foo', @rest rest, 'bar']:
+        trace(i+':'+rest);
+      case [@rest rest, 'foo', 'bar']:
+        trace(i+':'+rest);
+      default:
+    }
 ```
 
 The code will output:
@@ -1183,34 +1195,34 @@ The code will output:
 ## Type switch
 
 With tink you can switch over an expression's type like so:
-	
-```
+    
+```haxe
 switch expr {
-	case (name1 : Type1):
-	case (name2 : Type2):
-	case (name3 : Type3):
-		...
-	default:
+    case (name1 : Type1):
+    case (name2 : Type2):
+    case (name3 : Type3):
+        ...
+    default:
 }
 ```
 
 A default clause is mandatory. Also expr must be of the type you are switching against, so if for example you want to use this for downcasting, you will need to do `switch (expr : Dynamic) { ... }` or something equivalent.
 
 Simple example:
-	
-```
+    
+```haxe
 var value:haxe.extern.EitherType<Int, String> = 5;
 
 switch value {
-	case (i : Int): trace('int $i');
-	case (s : String): trace('string $s');
-	default:
+    case (i : Int): trace('int $i');
+    case (s : String): trace('string $s');
+    default:
 }
 ```
 
 Put together with a destructuring loop:
 
-```
+```haxe
 var fruit:Array<Any> = [new Apple(), new Apple(), new Banana(), new Apple(), new Kiwi()];
 var apples = [for ((a : Apple) in fruit) a];
 trace(apples.length);//3
@@ -1220,7 +1232,7 @@ trace(apples.length);//3
 
 Default allows you to deal with sentinel or default values (such as `null`, `-1`, `0`). Instead of writing this code:
 
-```
+```haxe
 var x = someComplexExpression;
 if (x == null) x = defaultValue;
 doSomething(x)
@@ -1228,7 +1240,7 @@ doSomething(x)
 
 You would write:
 
-```
+```haxe
 doSomething(someComplexExpression | if (null) defaultValue);
 ```
 
