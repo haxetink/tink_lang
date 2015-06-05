@@ -12,8 +12,8 @@
 	"contributors": [
 		"back2dos"
 	],
-	"releasenote": "Minor documentation improvements.",
-	"version": "0.2.1",
+	"releasenote": "Added compound when + documentation.",
+	"version": "0.3.0",
 	"url": "http://haxetink.org/tink_lang",
 	"dependencies": {
 		"tink_syntaxhub": ""
