@@ -4,4 +4,4 @@
 -neko bin/tests.n
 -D analyzer
 -main RunTests
---macro tink.lang.Sugar.use()
+extraParams.hxml

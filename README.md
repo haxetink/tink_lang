@@ -1129,6 +1129,21 @@ using EventTools;
 }
 ```
 
+#### Compound named when
+
+If you have many Futures you want to handle, you can use @when with an object literal, e.g.:
+
+```
+var int:Future<Int> = Future.sync(5),
+    float:Future<Float> = Future.sync(4.5),
+		string:Future<String> = Future.sync('foo'),
+		bool:Future<Bool> = Future.sync(false);
+		
+@when({ i: int, f: float, s: string, b: bool }) @do(o) {
+	$type(o);//{ i:Int, f:Float, s:String, b: Bool }
+}
+```
+
 ### In and Every
 
 ```haxe

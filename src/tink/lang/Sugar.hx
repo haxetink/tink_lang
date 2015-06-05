@@ -27,7 +27,65 @@ class Sugar {
 					
 				case macro @when($future) $handler:
 					var any = e.pos.makeBlankType();
-					macro @:pos(e.pos) ($future : tink.core.Future<$any>).handle($handler);
+					
+					function futurize(e:Expr) {
+						var any = e.pos.makeBlankType();
+						return macro @:pos(e.pos) ($e : tink.core.Future<$any>);
+					}
+					
+					switch future.expr {
+						case EObjectDecl([]):
+							future.reject('At least on field must be defined in this notation');
+						case EObjectDecl([{ field: field, expr: future }]):
+							macro @:pos(e.pos) ${futurize(future)}.map(function (r) return { $field: r }).handle($handler);
+						case EObjectDecl(fields):
+							fields = [for (f in fields) { field: f.field, expr: futurize(f.expr ) } ];
+							
+							var retType = ComplexType.TAnonymous([
+								for (f in fields) {
+									name: f.field,
+									pos: f.expr.pos,
+									kind: FVar(
+										(function () return switch f.expr.typeof() {
+											
+											case Success(TAbstract(_, [t])): t;
+											
+											case Failure(error):
+											
+												trace(f.expr.toString());
+												throw 'what';
+												
+											default: throw 'assert';
+										}).lazyComplex()
+									)
+								}
+							]);
+							
+							var block = [
+								(macro 
+									var tmpData:$retType = cast { }, 
+									    tmpCount = $v{fields.length},
+									    tmpTrigger = Future.trigger()
+								),
+								macro function tmpProgress() if (--tmpCount == 0) tmpTrigger.trigger(tmpData)
+							];
+							
+							for (f in fields) {
+								var name = f.field;
+								block.push(macro 
+									${f.expr}.handle(function (value) {
+										tmpData.$name = value;
+										tmpProgress();
+									})
+								);
+							}
+								
+							block.push(macro @:pos(e.pos) tmpTrigger.asFuture().handle($handler));
+							//trace(block.toString());
+							block.toBlock(e.pos);
+						default:	
+							macro @:pos(e.pos) ${futurize(future)}.handle($handler);
+					}
 					
 				case macro @whenever($signal) $handler:
 					var any = e.pos.makeBlankType();

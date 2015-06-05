@@ -16,6 +16,7 @@ class RunTests {
 		new TestPartial(),
 		new TestShortLambda(),
 		new TestSwitch(),
+		new TestWhen(),
 	];
 	
 	static function main() {
