@@ -1122,7 +1122,7 @@ using EventTools;
       y0 = stage.mouseY - target.y;
       
   @until(stage.gets(MOUSE_UP).next()) 
-    @whenever(stage.gets(MOUSE_MOVE)) {
+    @whenever(stage.gets(MOUSE_MOVE)) @do {
       target.x = stage.mouseX - x0;
       target.y = stage.mouseY - y0;
     }
