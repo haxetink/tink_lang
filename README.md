@@ -618,7 +618,7 @@ This kind of forwarding may appear a little strange at first, but let's see it i
 ```haxe
 //Foo and Bar defined in the example above
 @:tink class FooBar2 {
-    var fields:Hash<Dynamic>;
+    var fields:Map<String, Dynamic>;
     @:forward function anyName(foo:Foo, bar:Bar) {
         get: fields.get($name),
         set: fields.set($name, param),
@@ -631,7 +631,7 @@ This becomes (actually this is simplified for your convenience):
 
 ```haxe
 @:tink class Foobar2 {
-    var fields:Hash<Dynamic>;
+    var fields:Map<String, Dynamic>;
     public function fooX(x:X) trace('calling '+'fooX'+' on '+'foo'+' with '+[x])
     public function yFoo() trace('calling '+'yFoo'+' on '+'foo'+' with '+[])
     @:prop(fields.get('barVar'), fields.set('barVar', param)) var barVar:V;//see accessor generation
