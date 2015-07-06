@@ -1,8 +1,9 @@
 #each
-
--lib tink_lang
+-lib tink_syntaxhub
+-cp src
 -cp tests
 -dce full
+extraParams.hxml
 -main RunTests
 --each
 
