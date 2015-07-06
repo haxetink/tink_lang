@@ -12,8 +12,8 @@
 	"contributors": [
 		"back2dos"
 	],
-	"releasenote": "Added compound when + documentation.",
-	"version": "0.3.0",
+	"releasenote": "Fix an issue with @:tink being used on interfaces.",
+	"version": "0.3.1",
 	"url": "http://haxetink.org/tink_lang",
 	"dependencies": {
 		"tink_syntaxhub": ""
