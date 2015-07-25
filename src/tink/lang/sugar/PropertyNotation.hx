@@ -10,11 +10,13 @@ class PropertyNotation {
 	static public inline var READ = ':read';
 	static public inline var CALC = ':calc';
 	static public inline var LAZY = ':lazy';
+	static public inline var CONST = ':const';
 	
 	static var aliases = [
 		':property' => PROP,
 		':readonly' => READ,
 		':calculated' => CALC,
+		':constant' => CONST,
 	];
 		
 	static public function apply(ctx:ClassBuilder) 
@@ -101,7 +103,23 @@ class PropertyNotation {
 							continue;
 						default: 
 					}
-					
+					switch member.extractMeta(CONST) {
+						case Success(tag):
+							if (e == null)
+								member.pos.error('no expression given');
+							if (t == null)
+								t = e.pos.makeBlankType();
+							member.kind = FProp('get', 'never', t, null);
+							member.isStatic = true;
+							member.isBound = true;
+							member.publish();
+							var getter = Member.getter(name, e, t);
+							getter.isStatic = true;
+							member.isBound = true;
+							add(getter);
+							continue;
+						default: 
+					}
 					switch member.extractMeta(READ) {
 						case Success(tag):
 							switch member.extractMeta(PROP) {
