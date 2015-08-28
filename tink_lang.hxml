@@ -3,5 +3,7 @@
 -cp tests
 -neko bin/tests.n
 -D analyzer
+-D macro-times
 -main RunTests
 extraParams.hxml
+--times
