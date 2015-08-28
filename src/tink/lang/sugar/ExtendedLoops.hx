@@ -68,6 +68,16 @@ class ExtendedLoops {
 		
 	}
 	
+  static function hasLoop(exprs:Array<Expr>) {
+    for (e in exprs)
+      switch e.expr {
+        case EFor(_, _): return true;
+        default:
+      }
+      
+    return false;
+  }
+  
 	static public function comprehensions(expr:Expr) 
 		return
 			switch expr {

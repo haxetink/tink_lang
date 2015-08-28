@@ -281,6 +281,7 @@ class Sugar {
 					
 					p('ShortLambdas::process', ShortLambdas.process),
 					p('TrailingArguments', TrailingArguments.apply),
+					p('NamedParameters', NamedParameters.apply),
 					p('Default', defaultVal),
 				]);				
 			}

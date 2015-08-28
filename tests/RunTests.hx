@@ -17,6 +17,7 @@ class RunTests {
 		new TestShortLambda(),
 		new TestSwitch(),
 		new TestWhen(),
+    new TestNamedParameters(),
 	];
 	
 	static function main() {
