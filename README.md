@@ -1304,7 +1304,7 @@ var format = new openfl.text.TextFormat(@with margins);
 ### Named Parameter caveats
 
 Named parameters don't play too well with Haxe, because of how the language treats parameters names. 
-The compiler makes some effort track names, but that is only to make error messages more readable, i.e. "<theError> for function argument <theName>". Other than that, it does not care. At all.
+The compiler makes some effort track names, but that is only to make error messages more readable, i.e. "`<theError>` for function argument `<theName>`". Other than that, it does not care. At all.
 
 When using named parameters, you are extending function types to depend also on their names. This deviates from Haxe semantics and as a result may badly impact your code.
 If you rely on argument names, you will have to accept that library authors may change them, unaware of the problems it might cause you. You will also have to accept, 
