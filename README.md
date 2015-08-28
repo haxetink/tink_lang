@@ -35,7 +35,7 @@ Generally you should not use identifiers starting with `__tink_` to avoid confli
 			- [Readonly property](#readonly-property)
 			- [Readwrite properties](#readwrite-properties)
 	- [Complex Default Arguments](#complex-default-arguments)
-		- [Function options](#function-options)
+		- [Function Options](#function-options)
 			- [Direct options](#direct-options)
 	- [Notifiers](#notifiers)
 		- [Signal/Future on interfaces](#signal/future-on-interfaces)
@@ -70,6 +70,10 @@ Generally you should not use identifiers starting with `__tink_` to avoid confli
 	- [Array Rest Pattern](#array-rest-pattern)
 	- [Type switch](#type-switch)
 	- [Default](#default)
+	- [Named Parameters](#named-parameters)
+		- [Named Parameters with object literals](#named-parameters-with-object-literals)
+		- [Named Parameters with object references](#named-parameters-with-object-references)
+		- [Named Parameter caveats](#named-parameter-caveats)
 
 <!-- END INDEX -->
 

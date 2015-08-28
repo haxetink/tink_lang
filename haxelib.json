@@ -12,8 +12,8 @@
 	"contributors": [
 		"back2dos"
 	],
-	"releasenote": "Fix an issue with @:tink being used on interfaces.",
-	"version": "0.3.1",
+	"releasenote": "Named parameter support.",
+	"version": "0.4.0",
 	"url": "http://haxetink.org/tink_lang",
 	"dependencies": {
 		"tink_syntaxhub": ""
