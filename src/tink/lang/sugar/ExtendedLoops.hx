@@ -18,7 +18,7 @@ class ExtendedLoops {
 				switch e {
 					case macro $a => $b:
 						e = b;
-						b;
+						a;
 					case last: 
 						e = null;
 						last;
