@@ -12,8 +12,8 @@
 	"contributors": [
 		"back2dos"
 	],
-	"releasenote": "Named parameter support.",
-	"version": "0.4.0",
+	"releasenote": "Fix bug in map comprehensions.",
+	"version": "0.4.1",
 	"url": "http://haxetink.org/tink_lang",
 	"dependencies": {
 		"tink_syntaxhub": ""
