@@ -7,7 +7,7 @@ package ;
     results = [];
     var expected = [];
     
-    function tested(?length:Int = 0, y:Float = 0.5, z:String = '---')
+    function tested(?length:Int = 0, ?y:Float = 0.5, z:String = '---')
       results.push('$length $y $z');
     
     tested(@with { length: 5, y: .4, z: 'yo' });
@@ -68,7 +68,7 @@ package ;
 }
 
 class TestedClass {
-  public function new(length:Int = 0, y:Float = .5, z:String = '---') {
+  public function new(?length:Int = 0, ?y:Float = .5, z:String = '---') {
     @:privateAccess TestNamedParameters.results.push('$length $y $z');
   }
 }

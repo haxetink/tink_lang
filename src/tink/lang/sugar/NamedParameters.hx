@@ -12,13 +12,12 @@ class NamedParameters {
   static function construct(args:Signature, fields:Map<String, Expr>, ?transform:Expr->String->Expr, pos:Position):Array<Expr> {
     if (transform == null)
       transform = function (e, _) return e;
-    
     var ret = [];
     for (arg in args)
       switch fields[arg.name] {
         case null:
           if (!arg.opt)
-            pos.error('missing argument '+arg.name);
+            pos.error('missing argument ' + arg.name);
         case v:
           ret.push(transform(v, arg.name));
           fields.remove(arg.name);
