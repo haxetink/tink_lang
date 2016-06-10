@@ -29,8 +29,8 @@ class ComplexDefaultArguments {
       
     var body =
       switch f.expr {
-				case null: 
-					return;
+        case null: 
+          return;
         case { expr: EBlock(body) }: body;
         default:
           var body = [f.expr];
