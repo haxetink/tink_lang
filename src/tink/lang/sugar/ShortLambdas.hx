@@ -17,6 +17,14 @@ class ShortLambdas {
               default: a;
             }
           ].toArray();
+        case { expr: ESwitch(_, cases, _)}:
+          for (c in cases) 
+            c.values = c.values.map(function (v) return v.transform(function (e) return switch e {
+              case macro $a => $b:
+                macro @:pos(e.pos) ($a) => $b;
+              default: e;
+            }));
+          e;
         default: e;
       }
   
