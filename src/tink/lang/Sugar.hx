@@ -268,7 +268,7 @@ class Sugar {
           });
         
         queue(SyntaxHub.exprLevel.inward, [
-          p('ShortLambdas::protectMaps', ShortLambdas.protectMaps),
+          p('ShortLambdas::protectArrows', ShortLambdas.protectArrows),
           p('ShortLambdas::matchers', ShortLambdas.matchers),
           p('ExtendedLoops::comprehensions', ExtendedLoops.comprehensions),
           p('ExtendedLoops::transform', ExtendedLoops.apply),

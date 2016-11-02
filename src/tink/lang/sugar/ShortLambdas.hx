@@ -6,7 +6,7 @@ using tink.MacroApi;
 
 class ShortLambdas {
   
-  static public function protectMaps(e:Expr)
+  static public function protectArrows(e:Expr)
     return
       switch e {
         case macro [$a{args}] if (args.length > 0 && switch args[0] { case macro $k => $v: true; default: false; }):
