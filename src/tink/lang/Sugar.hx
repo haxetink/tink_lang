@@ -230,6 +230,11 @@ class Sugar {
             p(a, function (c:ClassBuilder) return if (appliesTo(c)) { b(c); true; } else false);
           
         queue(SyntaxHub.classLevel, [
+          p('Hxx::functionBody', function (c) for (m in c) switch m.kind {
+            case FFun(f) if (f.expr.expr.match(EConst(CString(_)))):
+              f.expr = macro @:pos(f.expr.pos) return @hxx ${f.expr};
+            default:
+          }),
           p('Notifiers', Notifiers.apply),
           p('PropertyNotation', PropertyNotation.apply),
           p('DirectInitialization', DirectInitialization.process),
@@ -268,6 +273,10 @@ class Sugar {
           });
         
         queue(SyntaxHub.exprLevel.inward, [
+          p('Hxx::apply', function (e:Expr) return switch e {
+            case macro @hxx $v: macro @:pos(e.pos) hxx($v);
+            default: e;
+          }),
           p('ShortLambdas::protectArrows', ShortLambdas.protectArrows),
           p('ShortLambdas::matchers', ShortLambdas.matchers),
           p('ExtendedLoops::comprehensions', ExtendedLoops.comprehensions),
