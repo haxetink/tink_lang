@@ -1,7 +1,6 @@
 -lib tink_syntaxhub
 extraParams.hxml
+tests.hxml
 -cp src
--cp tests
--main RunTests
 -swf out.swf
 --no-output

@@ -1140,7 +1140,7 @@ using EventTools;
 
 If you have many Futures you want to handle, you can use @when with an object literal, e.g.:
 
-```
+```haxe
 var int:Future<Int> = Future.sync(5),
     float:Future<Float> = Future.sync(4.5),
 		string:Future<String> = Future.sync('foo'),
@@ -1277,7 +1277,7 @@ You can use `@with` metadata to invoke an arbitrary function or constructor with
 This example with OpenFL's [`TextFormat`](http://docs.openfl.org/openfl/text/TextFormat.html#new) and 
 [`BitmapData`](http://docs.openfl.org/openfl/display/BitmapData.html#copyPixels) should illustrate the idea:
   
-```  
+```haxe 
 var format = new openfl.text.TextFormat(@with { underline: true, size: 15 });//oh yeah!
 
 var someBmp = new openfl.display.BitmapData(500, 400);
@@ -1294,7 +1294,7 @@ As you can see, ordering does not matter.
 
 Instead of defining an object literal at the call site, you may also use a reference to an arbitrary object and have that splatted onto the argument list. The `TextFormat` example above would now look like so:
   
-```
+```haxe
 @:tink class Margins {
   var leftMargin:Float = _;
   var rightMargin:Float = _;
@@ -1318,7 +1318,7 @@ If you design an API in such a way that its consumers will need named parameters
 Named parameters only serve as a workaround for interfaces that should be improved to start with. You can use tink_lang's [function options](#function-options), or better yet, 
 instead of passing a big hunk of values, write the function against an interface that defines the behavior that the data would parametrize. Example:
 
-```
+```haxe
 //BAD:
 class Box {
   function new(marginTop:Int, marginBottom:Int, marginLeft:Int, marginRight:Int, minWidth:Int, maxWidth:Int, minHeight:Int, maxHeight:Int);
@@ -1339,3 +1339,7 @@ You can the go an implement miriads of layouts, with margins, without and what n
 There are of course cases, where there's simply no way around, particularly if you hit a performance bottleneck. But those are the exceptions to a general rule.
 
 Use named parameters to call against 3rd party APIs that are set in stone. For everything else, carefully explore other options first.
+
+## HXX
+
+To make writing [HXX](https://github.com/haxetink/tink_hxx) a little easier, `tink_lang` will interpret `@hxx <someExpr>` as to `hxx(<someExpr>)` and furthermore modify function bodies that are nothing but a string constant to `return hxx(<theString>)`.

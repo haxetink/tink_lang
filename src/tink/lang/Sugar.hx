@@ -274,6 +274,8 @@ class Sugar {
         
         queue(SyntaxHub.exprLevel.inward, [
           p('Hxx::apply', function (e:Expr) return switch e {
+            case { expr: EFunction(name, { ret: r, args: a, params: p, expr: { pos: pos, expr: EConst(CString(s)) } } )}:
+              EFunction(name, { ret: r, args: a, params: p, expr: macro @:pos(pos) return hxx($v{s}) }).at(e.pos);
             case macro @hxx $v: macro @:pos(e.pos) hxx($v);
             default: e;
           }),

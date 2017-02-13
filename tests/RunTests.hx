@@ -18,6 +18,7 @@ class RunTests {
     new TestSwitch(),
     new TestWhen(),
     new TestNamedParameters(),
+    new TestHxx(),
   ];
   
   static function main() {

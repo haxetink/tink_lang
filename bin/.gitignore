@@ -1,5 +1,6 @@
 *.n
 *.swf
+*.js
 php
 as3
 cpp
