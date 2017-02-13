@@ -76,6 +76,7 @@ Generally you should not use identifiers starting with `__tink_` to avoid confli
 		- [Named Parameters with object literals](#named-parameters-with-object-literals)
 		- [Named Parameters with object references](#named-parameters-with-object-references)
 		- [Named Parameter caveats](#named-parameter-caveats)
+	- [HXX](#hxx)
 
 <!-- END INDEX -->
 
