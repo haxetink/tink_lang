@@ -19,11 +19,9 @@ Generally you should not use identifiers starting with `__tink_` to avoid confli
 
 <!-- START INDEX -->
 - [Declaration Sugar](#declaration-sugar)
-	- 
-		- 
-			- [Publishing](#publishing)
-			- [Inference](#inference)
-			- [Implicit Return](#implicit-return)
+	- [Publishing](#publishing)
+	- [Inference](#inference)
+	- [Implicit Return](#implicit-return)
 	- [Partial implementation](#partial-implementation)
 		- [On demand implementation](#on-demand-implementation)
 		- [Default initialization](#default-initialization)
@@ -40,7 +38,7 @@ Generally you should not use identifiers starting with `__tink_` to avoid confli
 		- [Function Options](#function-options)
 			- [Direct options](#direct-options)
 	- [Notifiers](#notifiers)
-		- [Signal/Future on interfaces](#signal/future-on-interfaces)
+		- [Signal/Future on interfaces](#signalfuture-on-interfaces)
 	- [Syntactic Delegation](#syntactic-delegation)
 		- [Delegation filters](#delegation-filters)
 		- [Delegation to member](#delegation-to-member)
