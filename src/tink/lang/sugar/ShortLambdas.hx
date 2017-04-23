@@ -13,7 +13,7 @@ class ShortLambdas {
           [for (a in args)
             switch a {
               case macro $k => $v:
-                macro ($k) => $v;
+                macro @:pos(a.pos) ($k) => $v;
               default: a;
             }
           ].toArray();
