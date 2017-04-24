@@ -231,7 +231,7 @@ class Sugar {
           
         queue(SyntaxHub.classLevel, [
           p('Hxx::functionBody', function (c) for (m in c) switch m.kind {
-            case FFun(f) if (f.expr.expr.match(EConst(CString(_)))):
+            case FFun(f) if (f.expr != null && f.expr.expr.match(EConst(CString(_)))):
               f.expr = macro @:pos(f.expr.pos) return @hxx ${f.expr};
             default:
           }),
