@@ -115,5 +115,5 @@ This feature is quite exotic. It's intention is to allow building full proxies, 
 
 ## Delegation on interfaces
 
-Using this syntax on interfaces will cause sensible [partial implementations](#partial-implementation) most of the time. Consider it experimental.
+Using this syntax on interfaces will cause sensible [partial implementations](declaration-sugar/partial-implementation.md) most of the time. Consider it experimental.
 

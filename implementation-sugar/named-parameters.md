@@ -45,7 +45,7 @@ you may have to use different names. This means that if you change a type to som
 
 Therefore you should use named parameters sparsingly. If you feel the need to use named parameters when calling against an API that you control, then change the API. 
 If you design an API in such a way that its consumers will need named parameters to not want to rip their eyes out, change the API.
-Named parameters only serve as a workaround for interfaces that should be improved to start with. You can use tink_lang's [function options](#function-options), or better yet, 
+Named parameters only serve as a workaround for interfaces that should be improved to start with. You can use tink_lang's [function options](declaration-sugar/complex-default-arguments.md#function-options), or better yet, 
 instead of passing a big hunk of values, write the function against an interface that defines the behavior that the data would parametrize. Example:
 
 ```haxe

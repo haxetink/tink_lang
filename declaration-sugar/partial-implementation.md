@@ -81,11 +81,11 @@ The above is rather hard to use, if `elements` is not initialized. Therefore we 
 }
 ```
 
-Default initializations are added at the beginning of the final class constructor through [direct initialization](#direct-initialization), if the corresponding field is generated. This doesn't require `@:usedOnlyBy`.
+Default initializations are added at the beginning of the final class constructor through [direct initialization](declaration-sugar/property-declaration.md#direct-initialization), if the corresponding field is generated. This doesn't require `@:usedOnlyBy`.
 
 ## Partial implementation caveats and use cases
 
-This feature should be used sparsingly. Composition is preferable (check out [syntactic delegation](#syntactic-delegation)). You would use partial implementation when:
+This feature should be used sparsingly. Composition is preferable (check out [syntactic delegation](declaration-sugar/syntactic-delegation.md)). You would use partial implementation when:
 
 1. Performance matters so badly, that you cannot afford the cost of composition. Beware of premature optimization here.
 2. What you do is so simple, that composition would complicate it.

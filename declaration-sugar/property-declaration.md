@@ -8,7 +8,7 @@ You can declare purely calculated properties like this:
 @:calculated var field:SomeType = someExpr;
 ```
 
-Calculated properties are [published](#publishing) and can be [infered](#inference) if you omit `SomeType`.
+Calculated properties are [published](declaration-sugar/introduction.md#publishing) and can be [infered](declaration-sugar/introduction.md#inference) if you omit `SomeType`.
 
 The above code will simply translate into:
 
@@ -17,7 +17,7 @@ public var field(get, never):SomeType;
 function get_field():SomeType someExpr;
 ```
 
-Return statements are [added implicitly](#implicit-return) to the getter. You can also use `inline` on the variable which will cause the generation of an `inline` getter. Also `@:calc` is a recognized shortcut.
+Return statements are [added implicitly](declaration-sugar/introduction.md#implicit-return) to the getter. You can also use `inline` on the variable which will cause the generation of an `inline` getter. Also `@:calc` is a recognized shortcut.
 
 Here's what happens if we use all of these together:
 
@@ -53,10 +53,10 @@ Which are defined as follows:
 Using any of these has a number of side effects:
 
 - They will generate a constructor if none exists, with a super call if necessary. This can sometimes lead to subtle issues. If you're getting cryptic error messages in complex inheritance chains, look here.
-- In the first two cases, they will add an argument to the constructor's argument list and [publish](#publishing) the constructor. Arguments are *appended* in the order of appearence. If you need them to go elsewhere, you can declare your constructor as `function new(before1, before2, _, after1, after2)`, where they will be inserted in order of appearence.
+- In the first two cases, they will add an argument to the constructor's argument list and [publish](declaration-sugar/introduction.md#publishing) the constructor. Arguments are *appended* in the order of appearence. If you need them to go elsewhere, you can declare your constructor as `function new(before1, before2, _, after1, after2)`, where they will be inserted in order of appearence.
 - Any initialization will cause the field to be get an `@:isVar`.
 
-### Setter Bypass
+###- Setter Bypass
 
 Direct initialization will cause setter bypass. That means if your field has a setter, it will not be invoked. This is useful if you have the chicken and egg problem that your setter requires the underlying field to be in a particular state to work correctly, but to set that state you would need to call the setter. Well, here you go.
 
@@ -101,7 +101,7 @@ public var y(get, null):Y;
 function get_y():Y someExpr;
 ```
 
-Readonly properties are [published](#publishing), and the getters use [implicit returns](#implicit-return).  
+Readonly properties are [published](declaration-sugar/introduction.md#publishing), and the getters use [implicit returns](declaration-sugar/introduction.md#implicit-return).  
 Also, `@:read` is a recognized shortcut and you can use `inline` to cause the getter to be inlined.
 
 ### Readwrite properties
@@ -132,7 +132,7 @@ function get_c() readC;
 function set_c(param) writeC;
 ```
 
-These properties are also [published](#publishing), and the getters and setters use [implicit returns](#implicit-return). Also, `@:prop` is a recognized shortcut and you can use `inline` to cause the getter and setter to be inlined.
+These properties are also [published](declaration-sugar/introduction.md#publishing), and the getters and setters use [implicit returns](declaration-sugar/introduction.md#implicit-return). Also, `@:prop` is a recognized shortcut and you can use `inline` to cause the getter and setter to be inlined.
 
 We have 3 different cases here:
 

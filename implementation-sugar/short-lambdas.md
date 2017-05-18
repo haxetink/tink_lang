@@ -24,7 +24,7 @@ This notation uses inline metadata to add a "keyword" as follows.
 
 Please note that metadata has precedence over binary operations. So `@do x = 5` will become `(function () x) = 5` which is an invalid statement. It's best to use `@do` with a block for a body, as that will assure the right precendence and should also look familiar to Ruby programmers.
 
-Combined with [trailing arguments](#trailing-arguments), you can write things like:
+Combined with [trailing arguments](implementation-sugar/trailing-arguments.md), you can write things like:
 
 ```haxe
 myButton.on('click') => @do {
@@ -48,7 +48,7 @@ fs.readFile('config') => @do(error, data)
 
 ## F functions
 
-Similarly to [do procedures](#do-procedure), `@f` will create a function:
+Similarly to [do procedures](#do-procedures), `@f` will create a function:
 
 * `@f 4` becomes `function () return 4`
 * `@f(who) 'hello $who'` becomes `function (who) return 'hello $who')`
@@ -100,7 +100,7 @@ function (tmp1, tmp2) switch [tmp1, tmp2] {
 }
 ```
 
-Put together with [trailing arguments](#trailing-arguments), you can write code like this:
+Put together with [trailing arguments](implementation-sugar/trailing-arguments.md), you can write code like this:
 
 ```haxe
 someOp() => switch _ {
