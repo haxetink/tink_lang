@@ -28,5 +28,5 @@ As we see, not specifying an initialization will cause generation of a trigger. 
 
 ## Signal/Future on interfaces
 
-You can use this syntax on interfaces also, which causes [partial implementations](#partial-implementation). If a trigger is generated, it will get a `@:usedOnlyBy`-clause.
+You can use this syntax on interfaces also, which causes [partial implementations](declaration-sugar/partial-implementation.md). If a trigger is generated, it will get a `@:usedOnlyBy`-clause.
 
