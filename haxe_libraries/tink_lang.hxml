@@ -1,0 +1,4 @@
+-D tink_lang
+-cp src
+-lib tink_syntaxhub
+--macro tink.lang.Sugar.use()

@@ -1,27 +1,34 @@
 sudo: required
 dist: trusty
 
-language: haxe
+language: node_js
+node_js: 6
 
-haxe:
-  - "3.2.1"
-  - development
-  
-matrix:
-  allow_failures:
-    - haxe: development
-    
+os:
+  - linux
+  - osx
+      
 install:
-  - haxelib install travix
-  - haxelib run travix install
+  - npm install
+  
 
 script:
-  - haxelib run travix interp
-  - haxelib run travix neko
-  - haxelib run travix python
-  - haxelib run travix node
-  #- haxelib run travix flash
-  - haxelib run travix java
-  - haxelib run travix cpp
-  - haxelib run travix cs
-  - haxelib run travix php
+  - npm run --silent travix interp
+  - npm run --silent travix neko
+  - npm run --silent travix python
+  - npm run --silent travix node
+  #- npm run --silent travix flash
+  - npm run --silent travix java
+  - npm run --silent travix cpp
+  - npm run --silent travix cs
+  - npm run --silent travix php
+  - npm run --silent travix lua
+  
+  
+# == no token yet ==
+# jobs:
+#   include:
+#     - stage: deploy
+#       os: linux
+#       script: skip
+#       after_success: npm run --silent travix release

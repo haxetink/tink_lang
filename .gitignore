@@ -1,1 +1,4 @@
 /dump
+bin
+node_modules
+*.n
