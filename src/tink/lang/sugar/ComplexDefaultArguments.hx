@@ -55,26 +55,26 @@ class ComplexDefaultArguments {
               arg.name = MacroApi.tempName();
               
             function add(pos, name, init:Expr) {
-              if (init.isWildcard())
-                init = null;
-                
-              if (init == null) 
+              var mandatory = switch init {
+                case macro _, macro (_:$_): true;
+                default: false;
+              }
+
+              if (mandatory)
                 opt = false;
-                
+              
               if (direct) 
-                if (init == null)
+                if (mandatory)
                   prepend(macro @:pos(pos) var $name = $i{arg.name}.$name);
                 else
                   prepend(macro @:pos(pos) var $name = if ($i{arg.name}.$name == null) $init else $i{arg.name}.$name);
               else
-                if (init == null) 
-                  opt = false;
-                else 
+                if (!mandatory) 
                   prepend(macro @:pos(pos) if ($i{arg.name}.$name == null) $i{arg.name}.$name = ${init});
                 
               var type = 
                 switch init {
-                  case null: 
+                  case macro _: 
                     pos.makeBlankType();
                   case macro ($_ : $t):
                     t;
@@ -93,7 +93,7 @@ class ComplexDefaultArguments {
                 name: name,
                 pos: pos,
                 kind: FVar(type),
-                meta: if (init == null) null else [{ name : ':optional', pos: pos, params: [] }]
+                meta: if (mandatory) null else [{ name : ':optional', pos: pos, params: [] }]
               });
             }
             parts.reverse();
@@ -106,7 +106,7 @@ class ComplexDefaultArguments {
             }
             
             arg.type = TAnonymous(fields); //TODO: we could trick the typer into looking over the body
-            arg.value = macro null;
+            arg.value = if (opt) macro null else null;
           default:
             if (!(macro function (__ = ${arg.value}) {}).typeof().isSuccess()) {
               arg.type = arg.value.pos.makeBlankType();

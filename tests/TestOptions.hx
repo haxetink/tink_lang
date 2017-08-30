@@ -4,7 +4,7 @@ import haxe.ds.StringMap;
 using Lambda;
 
 @:tink private class Dummy {
-  public function new(foo = [7], o1 = { x: 5, y: 'bar'}, o2 = { a: o1.x, b: foo[0]}) {
+  public function new(foo = [7], o1 = { x: _, y: 'bar'}, o2 = { a: o1.x, b: foo[0]}) {
     function test(foo = [7], o1 = { x: 5, y: 'bar'}, o2 = { a: o1.x, b: foo[0]}) {}
   }
   
@@ -19,7 +19,7 @@ using Lambda;
 class TestOptions extends Base {
   function test() {
     
-    var d = new Dummy();
+    var d = new Dummy({ x: 1 });
     for (i in 0...10) {
       var r = d.normal({x:i});
       
