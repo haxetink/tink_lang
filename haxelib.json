@@ -12,8 +12,8 @@
 	"contributors": [
 		"back2dos"
 	],
-	"releasenote": "Minor fix.",
-	"version": "0.5.1",
+	"releasenote": "Minor fix for complex default args.",
+	"version": "0.5.2",
 	"url": "http://haxetink.org/tink_lang",
 	"dependencies": {
 		"tink_syntaxhub": ""
