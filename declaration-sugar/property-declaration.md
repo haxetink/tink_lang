@@ -54,9 +54,9 @@ Using any of these has a number of side effects:
 
 - They will generate a constructor if none exists, with a super call if necessary. This can sometimes lead to subtle issues. If you're getting cryptic error messages in complex inheritance chains, look here.
 - In the first two cases, they will add an argument to the constructor's argument list and [publish](declaration-sugar/introduction.md#publishing) the constructor. Arguments are *appended* in the order of appearence. If you need them to go elsewhere, you can declare your constructor as `function new(before1, before2, _, after1, after2)`, where they will be inserted in order of appearence.
-- Any initialization will cause the field to be get an `@:isVar`.
+- Any initialization will cause the field to get an `@:isVar`.
 
-###- Setter Bypass
+### Setter Bypass
 
 Direct initialization will cause setter bypass. That means if your field has a setter, it will not be invoked. This is useful if you have the chicken and egg problem that your setter requires the underlying field to be in a particular state to work correctly, but to set that state you would need to call the setter. Well, here you go.
 
