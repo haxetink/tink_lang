@@ -12,8 +12,8 @@
 	"contributors": [
 		"back2dos"
 	],
-	"releasenote": "Minor fix for complex default args.",
-	"version": "0.5.2",
+	"releasenote": "Add shorthand for promise fields.",
+	"version": "0.5.3",
 	"url": "http://haxetink.org/tink_lang",
 	"dependencies": {
 		"tink_syntaxhub": ""
