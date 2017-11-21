@@ -10,6 +10,7 @@ class RunTests {
     new TestInit(),
     new ClsTest(),
     new TestFutureDecl(),
+    new TestPromiseDecl(),
     new TestSignalDecl(),
     new TestLoops(),
     new TestOptions(),

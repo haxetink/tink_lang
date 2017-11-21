@@ -7,10 +7,11 @@ import tink.core.*;
 using tink.MacroApi;
 
 class Notifiers {
+  static function mk(s:String, t)
+    return s.asComplexType([TPType(t)]);
+
   static function make(type:String) {
     var Type = type.charAt(0).toUpperCase() + type.substr(1);
-    function mk(s:String, t)
-      return s.asComplexType([TPType(t)]);
     return new Pair(':$type', {
       published: function (t) return mk('tink.core.$Type', t),
       internal: function (t) return mk('tink.core.$Type.${Type}Trigger', t),
@@ -18,9 +19,18 @@ class Notifiers {
       publish: function (e:Expr) return e.field('as$Type', e.pos).call(e.pos)
     });
   }
+  static function outcome(t)
+    return macro : tink.core.Outcome<$t, tink.core.Error>;
+
   static var types = [
     make('signal'),
-    make('future')
+    make('future'),
+    new Pair(':promise', {
+      published: function (t) return mk('tink.core.Promise', t),
+      internal: function (t) return mk('tink.core.Future.FutureTrigger', outcome(t)),
+      init: function (pos, t) return ENew('tink.core.Future.FutureTrigger'.asTypePath([TPType(outcome(t))]), []).at(pos),
+      publish: function (e:Expr) return e 
+    })
   ];
   
   static public function apply(ctx:ClassBuilder) {
@@ -48,7 +58,7 @@ class Notifiers {
                 member.kind = FVar(make.published(t), e);
                 member.addMeta(':read');
               default:
-                member.pos.error('can only declare signals on variables');
+                member.pos.error('can only use @${type.a} on variables');
             }
           default:
         }
