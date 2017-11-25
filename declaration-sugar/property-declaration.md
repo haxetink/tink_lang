@@ -40,14 +40,14 @@ Tink allows directly initializing fields with three different options:
 
 ```haxe
 var a:A = _;
-var b:B = (defaultB);
+var b:B = @byDefault;
 var c:C = constantC;
 ```
 
 Which are defined as follows:
 
 - `_` : a constructor argument
-- `(fallback)` : a constructor argument (or use `fallback` if it is null).
+- `@byDefault fallback` : a constructor argument (or use `fallback` if it is null). Prior versions of tink_lang used `(fallback)` instead. Using it will result in a deprecation warning.
 - or an arbitrary expression, that must be valid in the context of the constructor
 
 Using any of these has a number of side effects:
