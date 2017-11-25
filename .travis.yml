@@ -25,10 +25,12 @@ script:
   - npm run --silent travix lua
   
   
-# == no token yet ==
-# jobs:
-#   include:
-#     - stage: deploy
-#       os: linux
-#       script: skip
-#       after_success: npm run --silent travix release
+jobs:
+  include:
+    - stage: deploy
+      os: linux
+      script: skip
+      after_success: npm run --silent travix release
+
+env:
+  - secure: "MKc3jIUBhLAa7cQAMnuSJPuYSQrB5WQh1cDsrTGK63NMQHnWNuGHVXeei3PTwrzbK5chT6M4//WKXz090hOK/9HG8ye6ibvgeL0Zp1okYWRpLMQc21JQdFAzsKcT3Vcfc88eNkww3QD9YQvGAJRwJpRfKh/lLIrMRqLEEJ9C8t4="

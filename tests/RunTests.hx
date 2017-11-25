@@ -17,7 +17,7 @@ class RunTests {
     new TestPartial(),
     new TestShortLambda(),
     new TestSwitch(),
-    new TestWhen(),
+    #if !php new TestWhen(), #end
     new TestNamedParameters(),
     new TestHxx(),
   ];
