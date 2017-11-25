@@ -166,6 +166,32 @@ class Sugar {
         default: e;
       }
     
+    static function switchRange(e:Expr) {
+      return switch e.expr {
+        case ESwitch(_, cases, _):
+          for (c in cases)
+            c.values = [for (v in c.values) 
+              matchRanges(v)
+            ];
+          e;
+        default: e;
+      }      
+    }
+
+    static function matchRanges(e:Expr)
+      return
+        if (e == null) null;
+        else switch e {
+          case macro $lh => $rh: 
+            macro @:pos(e.pos) $lh => ${matchRanges(rh)};
+          case macro $lh ... $rh + 1:
+            macro @:pos(e.pos) _ >= $lh && _ <= $rh => true;
+          case macro $lh ... $rh:
+            macro @:pos(e.pos) _ >= $lh && _ < $rh  => true;
+          default: 
+            e.map(matchRanges);
+        }
+                  
     static function switchArrayRest(e:Expr)
       return switch e.expr {
         case ESwitch(_, cases, _):
@@ -287,6 +313,7 @@ class Sugar {
         
         queue(SyntaxHub.exprLevel.outward, [
           p('shortcuts', shortcuts),
+          p('switchRange', switchRange),
           p('switchType', switchType),
           p('switchArrayRest', switchArrayRest),
           

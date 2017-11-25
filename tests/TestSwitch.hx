@@ -55,11 +55,21 @@ using tink.CoreApi;
     var fruit:Array<Any> = [new Apple(), new Apple(), new Banana(), new Apple(), new Kiwi()];
     var apples:Array<Apple> = [for ((a : Apple) in fruit) a];
     
-    //
-    //for (a in apples)
-      //assertTrue(Std.is(a, Apple));
-      //
-    //assertEquals(3, apples.length);
+    for (a in apples)
+      assertTrue(Std.is(a, Apple));
+      
+    assertEquals(3, apples.length);
+  }
+
+  function testRange() {
+    var string = 'Hello, world!';
+
+    assertEquals('ulllloslllllo', [for (i in 0...string.length) switch string.charCodeAt(i) {
+      case 'A'.code ... 'Z'.code + 1: 'u';
+      case 'a'.code ... 'z'.code + 1: 'l';
+      case 0 ... ' '.code + 1: 's';
+      default: 'o';
+    }].join(''));
   }
 }
 
