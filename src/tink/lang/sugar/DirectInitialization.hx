@@ -57,7 +57,10 @@ class DirectInitialization {
       e.pos,  
       switch e {
         case macro _: Arg(t);
-        case macro ($e): OptArg(e, t);
+        case macro ($def): 
+          def.pos.warning('Specifying default per `(<default>)` is deprecated. Please use `@byDefault <default>` instead.');
+          OptArg(def, t);
+        case macro @byDefault $def: OptArg(def, t);
         default: Value(e);
       },
       { bypass : true }

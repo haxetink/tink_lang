@@ -61,7 +61,6 @@ class ClsTest extends TestCase {
     assertEquals(5, b.f);
                     
     assertEquals(6, b.g);
-    return;
     b.g = 3;        
     assertEquals(6, b.g);
                     
@@ -70,6 +69,9 @@ class ClsTest extends TestCase {
     assertEquals(7, b.h);
                     
     assertEquals(8, b.i);
+    assertEquals(b.d * 3, b.j);
+    assertEquals(b.d * 4, b.k);
+    assertEquals(b.d * 5, b.l);
     b.i = 8;
     #if (!cpp && !java)//in cpp this will fail, since Reflect.field calls the accessor
       assertFalse(Reflect.field(b, 'i') == b.i);
@@ -146,6 +148,9 @@ typedef Fwd2 = {
   @:prop(param << 1) var g:Int = 6;
   @:prop(h >>> 1, h = param << 1) var h:Int = 14;
   @:prop(h+1, h = param-1) var i:Int;
+  @:calc var j = d * 3;
+  @:calculated var k = d * 4;
+  @:computed var l = d * 5;
   public function new() {}
 }
 
@@ -158,7 +163,7 @@ private class Base {
 
 @:tink class Child extends Base {
   public var b:Int = _;
-  public var c = (3);
+  public var c = @byDefault 3;
   public var d:Int = b;
   public var e:String = a;
 }

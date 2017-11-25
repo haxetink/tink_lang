@@ -15,6 +15,8 @@ class PropertyNotation {
     ':property' => PROP,
     ':readonly' => READ,
     ':calculated' => CALC,
+    ':computed' => CALC,
+    ':comp' => CALC,
   ];
     
   static public function apply(ctx:ClassBuilder) 

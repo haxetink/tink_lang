@@ -23,5 +23,5 @@ class TestInit extends Base {
   static public var value = [1,2,3];
   public var foo:Array<Int> = Dummy.value;
   public var bar:String = _;
-  public var baz = ('baz');
+  public var baz = @byDefault 'baz';
 }
