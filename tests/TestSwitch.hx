@@ -71,6 +71,16 @@ using tink.CoreApi;
       default: 'o';
     }].join(''));
   }
+
+  function testRegex() {
+    var strings = [{ s: 'foo' }, { s: 'bar' }, { s: null }];
+    for (o in strings)
+      switch o {
+        case { s: ~/foo/ }: assertEquals('foo', o.s);
+        case { s: ~/bar/ }: assertEquals('bar', o.s);
+        default: assertEquals(null, o.s);
+      }
+  }
 }
 
 private class Foo {

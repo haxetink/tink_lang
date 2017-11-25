@@ -171,61 +171,49 @@ class Sugar {
         case ESwitch(_, cases, _):
           for (c in cases)
             c.values = [for (v in c.values) 
-              matchRanges(v)
+              fancyMatching(v)
             ];
           e;
         default: e;
       }      
     }
 
-    static function matchRanges(e:Expr)
+    
+    static function fancyMatching(e:Expr)
       return
         if (e == null) null;
         else switch e {
           case macro $lh => $rh: 
-            macro @:pos(e.pos) $lh => ${matchRanges(rh)};
+            macro @:pos(e.pos) $lh => ${fancyMatching(rh)};
           case macro $lh ... $rh + 1:
             macro @:pos(e.pos) _ >= $lh && _ <= $rh => true;
           case macro $lh ... $rh:
             macro @:pos(e.pos) _ >= $lh && _ < $rh  => true;
-          default: 
-            e.map(matchRanges);
-        }
+          case { expr: EConst(CRegexp(_, _)) }:
+            macro @:pos(e.pos) _ != null && $e.match(_) => true;
+          case { expr: EArrayDecl(_.map(fancyMatching) => v) }:
+            e = v.toArray(e.pos);
+            for (i in 0...v.length)
+              switch v[i] {
+                case macro @rest $i{name}:
+                  var head = v.slice(0, i);
+                  var tail = v.slice(i + 1);
                   
-    static function switchArrayRest(e:Expr)
-      return switch e.expr {
-        case ESwitch(_, cases, _):
-          for (c in cases)
-            c.values = [for (v in c.values) 
-              v.transform(function (e:Expr) 
-                return switch e.expr {
-                  case EArrayDecl(v) if (v.length > 0):
-                    for (i in 0...v.length)
-                      switch v[i] {
-                        case macro @rest $i{name}:
-                          var head = v.slice(0, i);
-                          var tail = v.slice(i + 1);
-                          
-                          e = (macro { 
-                            head: _.slice(0, $v{head.length}), 
-                            rest: _.slice($v{head.length}, _.length - $v{tail.length}),
-                            tail: _.slice(_.length - $v{tail.length}),
-                          } => {
-                            rest: $i{name},
-                            head: $a{head},
-                            tail: $a{tail},
-                          });
-                        default:
-                      }
-                    e;
-                  default:
-                    e;
-                }
-              )
-            ];
-          e;
-        default: e;
-      }
+                  e = (macro { 
+                    head: _.slice(0, $v{head.length}), 
+                    rest: _.slice($v{head.length}, _.length - $v{tail.length}),
+                    tail: _.slice(_.length - $v{tail.length}),
+                  } => {
+                    rest: $i{name},
+                    head: $a{head},
+                    tail: $a{tail},
+                  });
+                default:
+              }
+            e;
+          default: 
+            e.map(fancyMatching);
+        }
     
     static function use() {
       
@@ -315,7 +303,6 @@ class Sugar {
           p('shortcuts', shortcuts),
           p('switchRange', switchRange),
           p('switchType', switchType),
-          p('switchArrayRest', switchArrayRest),
           
           p('ShortLambdas::process', ShortLambdas.process),
           p('TrailingArguments', TrailingArguments.apply),
