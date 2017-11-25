@@ -99,7 +99,7 @@ class PropertyNotation {
                 t = e.pos.makeBlankType();
               member.kind = FProp('get', 'never', t, null);
               member.publish();
-              add(Member.getter(name, e, t));
+              add(Member.getter(name, e, t)).isStatic = member.isStatic;
               continue;
             default: 
           }

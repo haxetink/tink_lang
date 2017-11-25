@@ -151,6 +151,7 @@ typedef Fwd2 = {
   @:calc var j = d * 3;
   @:calculated var k = d * 4;
   @:computed var l = d * 5;
+  @:calc static var foo = Math.random();
   public function new() {}
 }
 
