@@ -12,8 +12,8 @@
 	"contributors": [
 		"back2dos"
 	],
-	"releasenote": "Add shorthand for promise fields.",
-	"version": "0.5.3",
+	"releasenote": "Align syntax with coconut. Fix static computed properties. Add regex and range matching.",
+	"version": "0.6.0",
 	"url": "http://haxetink.org/tink_lang",
 	"dependencies": {
 		"tink_syntaxhub": ""
