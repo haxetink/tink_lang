@@ -17,6 +17,7 @@
   - [Short lambdas](implementation-sugar/short-lambdas.md)
   - [Handlers](implementation-sugar/handlers.md)
   - [Array Rest Pattern](implementation-sugar/array-rest-pattern.md)
+  - [Advanced Pattern Matching](implementation-sugar/advanced-pattern-matching.md)
   - [Type switch](implementation-sugar/type-switch.md)
   - [Default](implementation-sugar/default.md)
   - [Named Parameters](implementation-sugar/named-parameters.md)
