@@ -185,8 +185,6 @@ class Sugar {
         else switch e {
           case macro $lh => $rh: 
             macro @:pos(e.pos) $lh => ${fancyMatching(rh)};
-          case macro $lh ... $rh + 1:
-            macro @:pos(e.pos) _ >= $lh && _ <= $rh => true;
           case macro $lh ... $rh:
             macro @:pos(e.pos) _ >= $lh && _ < $rh  => true;
           case { expr: EConst(CRegexp(_, _)) }:
