@@ -8,6 +8,7 @@ import tink.priority.Selector;
   import tink.macro.ClassBuilder;
   import tink.priority.Queue;
   
+  using haxe.macro.MacroStringTools;
   using tink.MacroApi;
   using tink.CoreApi;
 #end
@@ -187,6 +188,30 @@ class Sugar {
             macro @:pos(e.pos) $lh => ${fancyMatching(rh)};
           case macro $lh ... $rh:
             macro @:pos(e.pos) _ >= $lh && _ < $rh  => true;
+          case { expr: EConst(CString(s)) } if (MacroStringTools.isFormatExpr(e)):
+            switch (s.formatString(e.pos):Expr) {
+              case { expr: EConst(CString(_)) }: e;
+              case v: 
+                var parts = [],
+                    constants = [];
+
+                function add(b:Expr) {
+                  parts.unshift(b);
+                  if (b.getString().isSuccess())
+                    constants.unshift(b);                  
+                }
+
+                while (true)
+                  switch v {
+                    case macro $a + $b:
+                      v = a;
+                      add(b);
+                    default: break;
+                  }
+                add(v);
+
+                (macro @:pos(e.pos) tink.lang.Match.fragments(_, [$a{constants}]) => [$a{parts}]);
+            }
           case { expr: EConst(CRegexp(_, _)) }:
             macro @:pos(e.pos) _ != null && $e.match(_) => true;
           case { expr: EArrayDecl(_.map(fancyMatching) => v) }:

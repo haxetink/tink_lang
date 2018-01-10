@@ -81,6 +81,23 @@ using tink.CoreApi;
         default: assertEquals(null, o.s);
       }
   }
+
+  function testPattern() {
+    var o = {
+      greeting: 'hello, world!',
+    };
+
+    switch o {
+      case { greeting: tink.lang.Match.fragments(_, ["", ", ", "!"]) => ["", greeting, ", ", who, "!"] }:
+      default: assertTrue(false); 
+    }
+    switch o {
+      case { greeting: '$greeting, $who!' }: 
+        assertEquals('hello', greeting);
+        assertEquals('world', who);
+      default: assertTrue(false); 
+    }
+  }
 }
 
 private class Foo {
