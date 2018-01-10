@@ -12,8 +12,8 @@
 	"contributors": [
 		"back2dos"
 	],
-	"releasenote": "Align syntax with coconut. Fix static computed properties. Add regex and range matching.",
-	"version": "0.6.0",
+	"releasenote": "Add string interpolation pattern matching.",
+	"version": "0.6.1",
 	"url": "http://haxetink.org/tink_lang",
 	"dependencies": {
 		"tink_syntaxhub": ""
