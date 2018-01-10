@@ -26,3 +26,16 @@ trace(switch input {
 ```
 
 The syntax translates to `_ != null && regex.match(_) => true`.
+
+## Interpolation patterns
+
+You can pattern match string against interpolated strings like so:
+
+```haxe
+switch input {
+  case 'Hello, $who!': trace(who);
+  default:
+}
+```
+
+The above will output `'world'` when `input == 'Hello, world!'`.
