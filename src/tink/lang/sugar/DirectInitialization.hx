@@ -31,7 +31,7 @@ class DirectInitialization {
       if (!member.isStatic)
         switch (member.kind) {
           case FVar(_, e) | FProp(_, _, _, e) if (e == null || isConst(e)):
-            member.addMeta(':isVar');
+            if (e != null) member.addMeta(':isVar');
           case FVar(t, e):
             member.kind = FVar(t = getType(t, e), null);
             DirectInitialization.member(ctx, member, t, e);
