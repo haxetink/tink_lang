@@ -4,6 +4,7 @@ import haxe.macro.Type;
 import haxe.macro.Expr;
 import haxe.ds.Option;
 
+using haxe.macro.Tools;
 using tink.MacroApi;
 
 private abstract Fieldish({ set: String->Bool->Expr->Void, get: Void->Metadata, pos:Position, name:String }) {
@@ -131,7 +132,7 @@ class PartialImplementation {
             paramMap = new Map();
             
           for (p in i.t.get().params)
-            paramMap.set(p.name, i.params[index++].toComplex());          
+            paramMap.set(p.name, i.params[index++].toComplexType());          
             
           function addDependencies()
             dependencies.push({
