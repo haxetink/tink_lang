@@ -36,4 +36,12 @@ package ;
     var a = [0,1,2,3,4].filter(x => x & 1 == 0).map(x => x >>> 1);
     assertEquals('0,1,2', a.join(','));
   }
+  
+  function testTypeChecked() {
+    var a = [0,1,2,3,4].filter((x:Int) => x & 1 == 0);
+    assertEquals('0,2,4', a.join(','));
+    
+    var a = [0,1,2,3,4].filter([(x:Int)] => x & 1 == 0);
+    assertEquals('0,2,4', a.join(','));
+  }
 }

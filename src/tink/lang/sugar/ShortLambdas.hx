@@ -53,7 +53,10 @@ class ShortLambdas {
   static function getIdents(exprs:Array<Expr>)
     return [
       for (e in exprs)
-        e.getIdent().sure().toArg()
+        switch e {
+          case macro ($i{arg}:$ct): arg.toArg(ct);
+          case _: e.getIdent().sure().toArg();
+        }
     ];
   
   static function parseSwitch(arg, cases, edef, e:Expr, isFunction):Expr
@@ -99,6 +102,8 @@ class ShortLambdas {
           arrow(getIdents(args), body, e.pos);
         case macro $i{arg} => $body:
           arrow([arg.toArg()], body, e.pos);
+        case macro ($i{arg}:$ct) => $body:
+          arrow([arg.toArg(ct)], body, e.pos);
         case macro @do($a{args}) $body:
           body.func(getIdents(args), false).asExpr(e.pos);
         case macro @f($a{args}) $body:
