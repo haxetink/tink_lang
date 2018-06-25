@@ -40,7 +40,7 @@ Tink allows directly initializing fields with three different options:
 
 ```haxe
 var a:A = _;
-var b:B = @byDefault;
+var b:B = @byDefault fallback;
 var c:C = constantC;
 ```
 
