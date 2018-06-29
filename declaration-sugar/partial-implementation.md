@@ -18,7 +18,7 @@ Tink allows for partial implementations, that are quite similar to traits. Parti
     }
     function map<A>(f:T->A):Array<A> {
         var ret = [];
-        forEach(ret.push);
+        forEach(function (v) ret.push(f(v)));
         return ret;
     }
     function filter<A>(f:T->Bool):Array<T> {
