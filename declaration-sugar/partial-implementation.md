@@ -85,7 +85,7 @@ Default initializations are added at the beginning of the final class constructo
 
 ## Partial implementation caveats and use cases
 
-This feature should be used sparsingly. Composition is preferable (check out [syntactic delegation](declaration-sugar/syntactic-delegation.md)). You would use partial implementation when:
+This feature should be used sparingly. Composition is preferable (check out [syntactic delegation](declaration-sugar/syntactic-delegation.md)). You would use partial implementation when:
 
 1. Performance matters so badly, that you cannot afford the cost of composition. Beware of premature optimization here.
 2. What you do is so simple, that composition would complicate it.
