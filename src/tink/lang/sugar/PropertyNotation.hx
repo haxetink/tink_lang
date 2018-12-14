@@ -23,8 +23,8 @@ class PropertyNotation {
     new PropertyNotation(ctx).processMembers();
   
   static public function make(m:Member, t:ComplexType, getter:Expr, setter:Null<Expr>, hasField:String->Bool, addField:Member->?Bool->Member, ?e:Expr) {
-    var get = 'get_' + m.name,
-        set = if (setter == null) 'null' else 'set_' + m.name;
+    var get = 'get',
+        set = if (setter == null) 'null' else 'set';
     var acc = [];
     function mk(gen:Member) {
       acc.push(gen);
