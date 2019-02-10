@@ -6,10 +6,9 @@
     "haxelib": "haxelib",
     "haxe": "haxe",
     "travix": "neko travix.n",
-    "postinstall": "lix download && haxe -lib travix -main travix.Travix -neko travix.n && npm install -g switchx && switchx"
+    "postinstall": "lix download && haxe -lib travix -main travix.Travix -neko travix.n"
   },
   "dependencies": {
-    "haxeshim": "0.8.4",
-    "lix.pm": "^0.6.0"
+    "lix": "^15.3.5"
   }
 }
