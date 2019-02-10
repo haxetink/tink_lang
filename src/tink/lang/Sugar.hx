@@ -268,8 +268,18 @@ class Sugar {
           
         queue(SyntaxHub.classLevel, [
           p('Hxx::functionBody', function (c) for (m in c) switch m.kind {
-            case FFun(f) if (f.expr != null && f.expr.expr.match(EConst(CString(_)))):
-              f.expr = macro @:pos(f.expr.pos) return @hxx ${f.expr};
+            case FFun(f = { expr: e }) if (e != null):
+
+              while (true) switch e.expr {
+                case EBlock([v]): e = v;
+                default: break;
+              }
+              
+              switch e {
+                case v = { expr: EConst(CString(_)) }, macro @:markup $v:
+                  f.expr = macro @:pos(f.expr.pos) return hxx($v);
+                default:
+              }
             default:
           }),
           p('Notifiers', Notifiers.apply),
@@ -313,7 +323,7 @@ class Sugar {
           p('Hxx::apply', function (e:Expr) return switch e {
             case { expr: EFunction(name, { ret: r, args: a, params: p, expr: { pos: pos, expr: EConst(CString(s)) } } )}:
               EFunction(name, { ret: r, args: a, params: p, expr: macro @:pos(pos) return hxx($v{s}) }).at(e.pos);
-            case macro @hxx $v: macro @:pos(e.pos) hxx($v);
+            case macro @hxx $v, macro @:markup $v: macro @:pos(v.pos) hxx($v);
             default: e;
           }),
           p('ShortLambdas::protectArrows', ShortLambdas.protectArrows),
