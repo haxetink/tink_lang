@@ -1,36 +1,51 @@
 sudo: required
 dist: trusty
 
+stages:
+  - test
+  - deploy
+
 language: node_js
-node_js: 6
+node_js: 8
 
 os:
   - linux
-  - osx
-      
-install:
-  - npm install
+  # - osx
+
+env:
+  - HAXE_VERSION=3.4.7
+  - HAXE_VERSION=latest
   
+install:
+  - npm i -g lix
+  - lix install haxe $HAXE_VERSION
+  - lix download
 
 script:
-  - npm run --silent travix interp
-  - npm run --silent travix neko
-  - npm run --silent travix python
-  - npm run --silent travix node
-  #- npm run --silent travix flash
-  - npm run --silent travix java
-  - npm run --silent travix cpp
-  - npm run --silent travix cs
-  - npm run --silent travix php
-  - npm run --silent travix lua
+  - lix run travix interp
+  - lix run travix neko
+  - lix run travix python
+  - lix run travix node
+  #- lix run travix flash
+  - lix run travix java
+  - lix run travix cpp
+  - lix run travix cs
+  - lix run travix php
+  - lix run travix lua
   
   
 jobs:
   include:
+    # - stage: test # should uncomment this when there is no matrix above (e.g. only one os, one env, etc)
     - stage: deploy
+      language: haxe
+      haxe: "3.4.7"
       os: linux
+      install: skip
       script: skip
-      after_success: npm run --silent travix release
-
-env:
-  - secure: "MKc3jIUBhLAa7cQAMnuSJPuYSQrB5WQh1cDsrTGK63NMQHnWNuGHVXeei3PTwrzbK5chT6M4//WKXz090hOK/9HG8ye6ibvgeL0Zp1okYWRpLMQc21JQdFAzsKcT3Vcfc88eNkww3QD9YQvGAJRwJpRfKh/lLIrMRqLEEJ9C8t4="
+      env:
+        - secure: "MKc3jIUBhLAa7cQAMnuSJPuYSQrB5WQh1cDsrTGK63NMQHnWNuGHVXeei3PTwrzbK5chT6M4//WKXz090hOK/9HG8ye6ibvgeL0Zp1okYWRpLMQc21JQdFAzsKcT3Vcfc88eNkww3QD9YQvGAJRwJpRfKh/lLIrMRqLEEJ9C8t4="
+      after_success:
+        - haxelib install travix
+        - haxelib run travix install
+        - haxelib run travix release
