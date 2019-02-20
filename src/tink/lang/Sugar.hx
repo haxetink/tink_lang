@@ -237,6 +237,43 @@ class Sugar {
           default: 
             e.map(fancyMatching);
         }
+
+    static function markupOnly(f:Function) {
+      var e = f.expr;
+      
+      if (e == null) return f;
+      
+      while (true) switch e.expr {
+        case EBlock([v]): e = v;
+        default: break;
+      }
+      
+      var e2 = applyMarkup(e);
+
+      return
+        if (e == e2) f;
+        else { args: f.args, expr: macro @:pos(e2.pos) return $e2, ret: f.ret, params: f.params };
+    }
+
+    static function applyMarkup(e:Expr)
+      return switch e {
+        case macro @hxx $v: 
+          macro @:pos(e.pos) hxx($v);
+        case macro @:markup $v:
+          v = {
+            expr: v.expr,
+            pos: {
+              var p = Context.getPosInfos(v.pos);
+              Context.makePosition({//this is awkward
+                file: p.file,
+                min: p.min - 1,
+                max: p.max + 1,
+              });
+            }
+          }
+          macro @:pos(e.pos) hxx($v);
+        default: e;
+      }
     
     static function use() {
       
@@ -268,18 +305,8 @@ class Sugar {
           
         queue(SyntaxHub.classLevel, [
           p('Hxx::functionBody', function (c) for (m in c) switch m.kind {
-            case FFun(f = { expr: e }) if (e != null):
-
-              while (true) switch e.expr {
-                case EBlock([v]): e = v;
-                default: break;
-              }
-              
-              switch e {
-                case v = { expr: EConst(CString(_)) }, macro @:markup $v:
-                  f.expr = macro @:pos(f.expr.pos) return hxx($v);
-                default:
-              }
+            case FFun(f):
+              m.kind = FFun(markupOnly(f));
             default:
           }),
           p('Notifiers', Notifiers.apply),
@@ -321,10 +348,9 @@ class Sugar {
         
         queue(SyntaxHub.exprLevel.inward, [
           p('Hxx::apply', function (e:Expr) return switch e {
-            case { expr: EFunction(name, { ret: r, args: a, params: p, expr: { pos: pos, expr: EConst(CString(s)) } } )}:
-              EFunction(name, { ret: r, args: a, params: p, expr: macro @:pos(pos) return hxx($v{s}) }).at(e.pos);
-            case macro @hxx $v, macro @:markup $v: macro @:pos(v.pos) hxx($v);
-            default: e;
+            case { expr: EFunction(name, f)}:
+              EFunction(name, markupOnly(f)).at(e.pos);
+            default: applyMarkup(e);
           }),
           p('ShortLambdas::protectArrows', ShortLambdas.protectArrows),
           p('ShortLambdas::matchers', ShortLambdas.matchers),
