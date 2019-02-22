@@ -1,21 +1,21 @@
 {
 	"name": "tink_lang",
-	"license": "MIT",
+	"description": "A syntactic sugar bowl",
+	"classPath": "src",
+	"dependencies": {
+		"tink_syntaxhub": ""
+	},
+	"url": "http://haxetink.org/tink_lang",
+	"contributors": [
+		"back2dos"
+	],
+	"version": "0.6.2",
+	"releasenote": "Improve hxx integration for inline markup.",
 	"tags": [
 		"tink",
 		"cross",
 		"utility",
 		"sugar"
 	],
-	"classPath": "src",
-	"description": "A syntactic sugar bowl",
-	"contributors": [
-		"back2dos"
-	],
-	"releasenote": "Add string interpolation pattern matching.",
-	"version": "0.6.1",
-	"url": "http://haxetink.org/tink_lang",
-	"dependencies": {
-		"tink_syntaxhub": ""
-	}
+	"license": "MIT"
 }
