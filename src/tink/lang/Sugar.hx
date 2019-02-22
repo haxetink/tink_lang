@@ -248,6 +248,9 @@ class Sugar {
         default: break;
       }
       
+      if (e.expr.match(EConst(CString(_))))
+        e = macro @:pos(e.pos) @hxx $e;
+        
       var e2 = applyMarkup(e);
 
       return
