@@ -105,7 +105,6 @@ class NamedParameters {
           }
           
         case { expr: ENew(path, [macro @with $obj]) } :
-          //path.toString();
           (function () {
             var arr = path.pack.concat([path.name]);
             if (path.sub != null)
@@ -135,7 +134,6 @@ class NamedParameters {
                       tmp = MacroApi.tempName();
                   switch obj.expr {
                     case EObjectDecl(fields):
-                      //var set = withFields(signature, fields, obj.pos, function (e, name) return [tmp, name].drill(e.pos).assign(e, e.pos));
                       withFields(signature, fields, obj.pos, function (args) return ENew(path, args).at(e.pos));
                     default:
                       withObject(signature, obj, function (args) return ENew(path, args).at(e.pos));
