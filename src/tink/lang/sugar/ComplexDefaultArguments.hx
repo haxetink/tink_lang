@@ -79,12 +79,14 @@ class ComplexDefaultArguments {
                   case macro ($_ : $t):
                     t;
                   default:
+                    #if display
                     switch init.typeof() {
                       case Success(type): type.toComplex({ direct: true });
                       default: pos.makeBlankType();
                     }
-                    //TODO: this code should do the same as the switch above but results in "macro returned an invalid result"
-                    // init.typeof().map(Types.toComplex.bind(_, { direct: true })).orUse(pos.makeBlankType());
+                    #else 
+                      pos.makeBlankType();
+                    #end
                 }
                   
                     
