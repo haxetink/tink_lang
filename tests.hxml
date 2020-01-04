@@ -1,2 +1,3 @@
 -cp ./tests/
+-lib hx3compat
 -main RunTests
