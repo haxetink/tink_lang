@@ -1,6 +1,4 @@
--lib tink_syntaxhub
-extraParams.hxml
+-lib tink_lang
 tests.hxml
--cp src
 -swf out.swf
 --no-output
