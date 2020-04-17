@@ -7,33 +7,38 @@ import tink.priority.Selector;
   import tink.lang.sugar.*;
   import tink.macro.ClassBuilder;
   import tink.priority.Queue;
-  
+
   using haxe.macro.MacroStringTools;
   using tink.MacroApi;
   using tink.CoreApi;
 #end
-  
-  
+
+
 typedef Plugin = Callback<ClassBuilder>;
 
 class Sugar {
-  
+
   #if macro
-    
+
     static function shortcuts(e:Expr)
       return switch e {
         case macro @until($future) $link:
-          
+
           shortcuts(macro @:pos(e.pos) @when($future) ($link : tink.core.Callback.CallbackLink));
-          
+
         case macro @when($future) $handler:
           var any = e.pos.makeBlankType();
-          
-          function futurize(e:Expr) {
-            var any = e.pos.makeBlankType();
-            return macro @:pos(e.pos) ($e : tink.core.Future<$any>);
-          }
-          
+
+          function futurize(e:Expr)
+            return (function ()
+              return switch Context.followWithAbstracts(Context.typeof(e)) {
+                case TInst(_.get() => { pack: ['tink', 'core'], name: 'FutureObject' | 'FutureTrigger' }, _):
+                  e;
+                default:
+                  macro @:pos(e.pos) tink.core.Future.sync($e);
+              }
+            ).bounce();
+
           switch future.expr {
             case EObjectDecl([]):
               future.reject('At least on field must be defined in this notation');
@@ -41,66 +46,56 @@ class Sugar {
               macro @:pos(e.pos) ${futurize(future)}.map(function (r) return { $field: r }).handle($handler);
             case EObjectDecl(fields):
               fields = [for (f in fields) { field: f.field, expr: futurize(f.expr ) } ];
-              
+
               var retType = ComplexType.TAnonymous([
                 for (f in fields) {
                   name: f.field,
                   pos: f.expr.pos,
                   kind: FVar(
-                    (function () return switch f.expr.typeof() {
-                      
-                      case Success(TAbstract(_, [t])): t;
-                      
-                      case Failure(error):
-                      
-                        trace(f.expr.toString());
-                        throw 'what';
-                        
-                      default: throw 'assert';
-                    }).lazyComplex()
+                    f.expr.pos.makeBlankType()
                   )
                 }
               ]);
-              
+
               var block = [
-                (macro 
-                  var tmpData:$retType = cast { }, 
+                (macro
+                  var tmpData:$retType = cast { },
                       tmpCount = $v{fields.length},
                       tmpTrigger = Future.trigger()
                 ),
                 macro function tmpProgress() if (--tmpCount == 0) tmpTrigger.trigger(tmpData)
               ];
-              
+
               for (f in fields) {
                 var name = f.field;
-                block.push(macro 
+                block.push(macro
                   ${f.expr}.handle(function (value) {
                     tmpData.$name = value;
                     tmpProgress();
                   })
                 );
               }
-                
+
               block.push(macro @:pos(e.pos) tmpTrigger.asFuture().handle($handler));
               //trace(block.toString());
               block.toBlock(e.pos);
-            default:  
+            default:
               macro @:pos(e.pos) ${futurize(future)}.handle($handler);
           }
-          
+
         case macro @whenever($signal) $handler:
           var any = e.pos.makeBlankType();
           macro @:pos(e.pos) ($signal : tink.core.Signal<$any>).handle($handler);
-        
+
         case macro @in($delta) $handler:
-        
+
           macro @:pos(e.pos) (
             haxe.Timer.delay($handler, Std.int($delta * 1000)).stop :
             tink.core.Callback.CallbackLink
           );
-          
+
         case macro @every($delta) $handler:
-        
+
           macro @:pos(e.pos) (
             {
               var t = new haxe.Timer(Std.int($delta * 1000));
@@ -108,12 +103,12 @@ class Sugar {
               t.stop;
             } : tink.core.Callback.CallbackLink
           );
-        
+
         default: e;
       }
-      
+
     static function defaultVal(e:Expr)
-      return switch e { 
+      return switch e {
         case (macro $val || if ($x) $def)
           ,(macro $val | if ($x) $def):
           macro @:pos(e.pos) {
@@ -122,24 +117,24 @@ class Sugar {
           }
         default: e;
       }
-      
-    static function switchType(e:Expr) 
+
+    static function switchType(e:Expr)
       return switch e.expr {
         case ESwitch(target, cases, def) if (cases.length > 0):
           switch cases[0].values {
             case [macro ($_: $_)]:
               if (def == null) target.reject('Type switches need default clause');
-              for (c in cases) 
-                c.values = 
+              for (c in cases)
+                c.values =
                   switch c.values {
                     case [macro ($pattern : $t)]:
                       var pos = c.values[0].pos;
-                      
+
                       var te = switch t {
-                        case TPath({ pack: parts, name: name, params: params, sub: sub}): 
+                        case TPath({ pack: parts, name: name, params: params, sub: sub}):
                           parts = parts.copy();
                           parts.push(name);
-                          
+
                           if (params != null)
                             for (p in params)
                               switch p {
@@ -148,17 +143,17 @@ class Sugar {
                               }
                           if (sub != null)
                             parts.push(sub);
-                            
+
                           parts.drill(pos);
-                            
-                        default: 
+
+                        default:
                           pos.error('Invalid type for switching');
                       }
-                      
+
                       [macro @:pos(pos) (if (Std.is(_, $te)) [(_ : $t)] else []) => [$pattern]];
                     case [macro $i{ _ }]:
                       c.values;
-                    default: 
+                    default:
                       c.values[0].reject();
                   }
               e;
@@ -166,39 +161,39 @@ class Sugar {
           }
         default: e;
       }
-    
+
     static function switchRange(e:Expr) {
       return switch e.expr {
         case ESwitch(_, cases, _):
           for (c in cases)
-            c.values = [for (v in c.values) 
+            c.values = [for (v in c.values)
               fancyMatching(v)
             ];
           e;
         default: e;
-      }      
+      }
     }
 
-    
+
     static function fancyMatching(e:Expr)
       return
         if (e == null) null;
         else switch e {
-          case macro $lh => $rh: 
+          case macro $lh => $rh:
             macro @:pos(e.pos) $lh => ${fancyMatching(rh)};
           case macro $lh ... $rh:
             macro @:pos(e.pos) _ >= $lh && _ < $rh  => true;
           case { expr: EConst(CString(s)) } if (MacroStringTools.isFormatExpr(e)):
             switch (s.formatString(e.pos):Expr) {
               case { expr: EConst(CString(_)) }: e;
-              case v: 
+              case v:
                 var parts = [],
                     constants = [];
 
                 function add(b:Expr) {
                   parts.unshift(b);
                   if (b.getString().isSuccess())
-                    constants.unshift(b);                  
+                    constants.unshift(b);
                 }
 
                 while (true)
@@ -221,9 +216,9 @@ class Sugar {
                 case macro @rest $i{name}:
                   var head = v.slice(0, i);
                   var tail = v.slice(i + 1);
-                  
-                  e = (macro { 
-                    head: _.slice(0, $v{head.length}), 
+
+                  e = (macro {
+                    head: _.slice(0, $v{head.length}),
                     rest: _.slice($v{head.length}, _.length - $v{tail.length}),
                     tail: _.slice(_.length - $v{tail.length}),
                   } => {
@@ -234,23 +229,23 @@ class Sugar {
                 default:
               }
             e;
-          default: 
+          default:
             e.map(fancyMatching);
         }
 
     static function markupOnly(f:Function) {
       var e = f.expr;
-      
+
       if (e == null) return f;
-      
+
       while (true) switch e.expr {
         case EBlock([v]): e = v;
         default: break;
       }
-      
+
       if (e.expr.match(EConst(CString(_))))
         e = macro @:pos(e.pos) @hxx $e;
-        
+
       var e2 = applyMarkup(e);
 
       return
@@ -260,7 +255,7 @@ class Sugar {
 
     static function applyMarkup(e:Expr)
       return switch e {
-        case macro @hxx $v: 
+        case macro @hxx $v:
           macro @:pos(e.pos) hxx($v);
         case macro @:markup $v:
           v = {
@@ -277,35 +272,35 @@ class Sugar {
           macro @:pos(e.pos) hxx($v);
         default: e;
       }
-    
+
     static function use() {
-      
+
       function appliesTo(c:ClassBuilder)
         return c.target.meta.has(':tink');
-        
-      function queue<T>(queue:Queue<T>, items:Array<Pair<String, T>>, ?addFirst) {        
+
+      function queue<T>(queue:Queue<T>, items:Array<Pair<String, T>>, ?addFirst) {
         var first = items.shift();
         if (first == null)
           return;
-          
+
         if (addFirst == null)
           addFirst = queue.whenever;
-        
+
         addFirst(first.b, first.a);
-        
+
         var last = first.a;
-        for (item in items) 
+        for (item in items)
           queue.after(last, item.b, last = item.a);
       }
-      
+
       function p<X>(a:String, b:X)
         return new Pair('tink.lang.sugar.$a', b);
-      
+
       {
         var p = function (a, b)
-          return 
+          return
             p(a, function (c:ClassBuilder) return if (appliesTo(c)) { b(c); true; } else false);
-          
+
         queue(SyntaxHub.classLevel, [
           p('Hxx::functionBody', function (c) for (m in c) switch m.kind {
             case FFun(f):
@@ -318,13 +313,13 @@ class Sugar {
           p('Forwarding', Forwarding.apply),
           p('ComplexDefaultArguments::members', ComplexDefaultArguments.members),
         ], function (x, ?y, ?z) SyntaxHub.classLevel.before(SyntaxHub.exprLevel.id, x, y, z));
-        
+
         SyntaxHub.classLevel.after(
           function (_) return true, //this is a little aggressive but I see no reason why it should happen sooner
           function (c:ClassBuilder) {
             if (c.target.isInterface && !appliesTo(c))
               return false;
-            
+
             if (!appliesTo(c)) {
               for (i in c.target.interfaces)
                 if (i.t.get().meta.has(':tink')) {
@@ -339,16 +334,16 @@ class Sugar {
             }
           }
         );
-      }  
-      
+      }
+
       {
-        
+
         var p = function (a, b)
           return p(a, {
             appliesTo: appliesTo,
             apply: b
           });
-        
+
         queue(SyntaxHub.exprLevel.inward, [
           p('Hxx::apply', function (e:Expr) return switch e {
             case { expr: EFunction(name, f)}:
@@ -360,20 +355,20 @@ class Sugar {
           p('ExtendedLoops::comprehensions', ExtendedLoops.comprehensions),
           p('ExtendedLoops::transform', ExtendedLoops.apply),
         ]);
-        
+
         queue(SyntaxHub.exprLevel.outward, [
           p('shortcuts', shortcuts),
           p('switchRange', switchRange),
           p('switchType', switchType),
-          
+
           p('ShortLambdas::process', ShortLambdas.process),
           p('TrailingArguments', TrailingArguments.apply),
           p('NamedParameters', NamedParameters.apply),
           p('Default', defaultVal),
-        ]);        
+        ]);
       }
-        
+
     }
-    
+
   #end
 }
