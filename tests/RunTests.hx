@@ -1,10 +1,9 @@
 package ;
 
 import tink.testrunner.*;
-import tink.testrunner.Reporter;
 import tink.testadapter.*;
 
-import haxe.unit.TestCase;
+import haxe.unit.*;
 
 using tink.CoreApi;
 
@@ -26,7 +25,18 @@ class RunTests {
   ];
 
   static function main() {
-    Runner.run(HaxeUnit.makeBatch(tests), new CompactReporter())
-      .handle(Runner.exit);
+    #if tink_testadapter
+      Runner.run(HaxeUnit.makeBatch(tests), new Reporter.CompactReporter())
+        .handle(Runner.exit);
+    #else
+    var runner = new TestRunner();
+    for (t in tests)
+      runner.add(t);
+
+    travix.Logger.exit(
+      if (runner.run()) 0
+      else 500
+    );
+    #end
   }
 }
