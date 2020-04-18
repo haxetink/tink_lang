@@ -1,4 +1,4 @@
 -cp ./tests/
 -lib hx3compat
--lib tink_testadapter
+# -lib tink_testadapter
 -main RunTests
