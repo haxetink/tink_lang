@@ -6,9 +6,9 @@ using Lambda;
 
 class ClsTest extends TestCase {
 
-  public function new() 
+  public function new()
     super();
-  
+
   function testFwdBuild() {
     var last = null;
     function add(a, b) {
@@ -28,17 +28,17 @@ class ClsTest extends TestCase {
     var f = new Forwarder(target);
     assertTrue(Reflect.field(f, 'multiply') == null);
     assertTrue(Reflect.field(f, 'add') != null);
-    
+
     assertEquals(f.foo1(1, 2, 3), 'foo1_3');
     assertEquals(f.bar1(1), 'bar1_1');
     assertEquals(f.foo2(true, true), 'foo2_2');
     assertEquals(f.bar2(), 'bar2_0');
-    
+
     for (i in 0...10) {
       var a = Std.random(100),
         b = Std.random(100),
         x = Std.random(100);
-        
+
       assertEquals(f.add(a, b), add(a, b));
       assertEquals(last, 'add');
       assertEquals(f.subtract(a, b), subtract(a, b));
@@ -48,9 +48,9 @@ class ClsTest extends TestCase {
       assertEquals(f.x, x);
       assertEquals(f.y, x);
       assertEquals(target.x, x);
-    }    
+    }
   }
-  
+
   function testPropertyBuild() {
     var b = new Built();
     assertEquals(0, b.a);
@@ -59,21 +59,21 @@ class ClsTest extends TestCase {
     assertEquals(3, b.d);
     assertEquals(4, b.e);
     assertEquals(5, b.f);
-                    
+
     assertEquals(6, b.g);
-    b.g = 3;        
+    b.g = 3;
     assertEquals(6, b.g);
-                    
+
     assertEquals(7, b.h);
-    b.h = 7;        
+    b.h = 7;
     assertEquals(7, b.h);
-                    
+
     assertEquals(8, b.i);
     assertEquals(b.d * 3, b.j);
     assertEquals(b.d * 4, b.k);
     assertEquals(b.d * 5, b.l);
     b.i = 8;
-    #if (!cpp && !java)//in cpp this will fail, since Reflect.field calls the accessor
+    #if (!(cpp || java || cs))
       assertFalse(Reflect.field(b, 'i') == b.i);
     #end
     assertEquals(b.i, 8);
@@ -82,7 +82,7 @@ class ClsTest extends TestCase {
       assertEquals(b.h+1, b.i);
     }
   }
-  
+
   function testSuperConstructor() {
     var c = new Child("1", 2);
     assertEquals("1", c.a);
@@ -103,7 +103,7 @@ class ClsTest extends TestCase {
     assertEquals(2, c3.b);
     assertEquals(3, c3.c);
     assertEquals(2, c3.d);
-    assertEquals("1", c3.e);    
+    assertEquals("1", c3.e);
   }
 }
 
