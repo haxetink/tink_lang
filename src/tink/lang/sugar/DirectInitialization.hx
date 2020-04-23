@@ -50,8 +50,6 @@ class DirectInitialization {
 
   //TODO: the naming here is quite horrible
   static public function field(ctor:Constructor, name, t:ComplexType, e:Expr) {
-    var init = null,
-      def = null;
     ctor.init(
       name,
       e.pos,
