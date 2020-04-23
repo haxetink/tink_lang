@@ -1,6 +1,6 @@
-# @install: lix --silent download "gh://github.com/back2dos/travix#68023da4c13c0834d349952c696fd1c814cb9ddf" into travix/0.13.1/github/68023da4c13c0834d349952c696fd1c814cb9ddf
-# @post-install: cd ${HAXE_LIBCACHE}/travix/0.13.1/github/68023da4c13c0834d349952c696fd1c814cb9ddf && haxe -cp src --run travix.PostDownload
-# @run: haxelib run-dir travix ${HAXE_LIBCACHE}/travix/0.13.1/github/68023da4c13c0834d349952c696fd1c814cb9ddf
+# @install: lix --silent download "haxelib:/travix#0.14.0" into travix/0.14.0/haxelib
+# @post-install: cd ${HAXE_LIBCACHE}/travix/0.14.0/haxelib && haxe -cp src --run travix.PostDownload
+# @run: haxelib run-dir travix ${HAXE_LIBCACHE}/travix/0.14.0/haxelib
 -lib tink_cli
--cp ${HAXE_LIBCACHE}/travix/0.13.1/github/68023da4c13c0834d349952c696fd1c814cb9ddf/src
--D travix=0.13.1
+-cp ${HAXE_LIBCACHE}/travix/0.14.0/haxelib/src
+-D travix=0.14.0
