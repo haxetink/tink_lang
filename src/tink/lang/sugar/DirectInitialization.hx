@@ -13,10 +13,16 @@ class DirectInitialization {
   function new(ctx)
     this.ctx = ctx;
 
-  function getType(t:Null<ComplexType>, inferFrom:Expr)
+  function getType(pos:Position, t:Null<ComplexType>, inferFrom:Expr)
     return
       if (t == null)
-        inferFrom.typeof().sure().toComplex();
+        (function ()
+          return switch inferFrom.typeof() {
+            case Success(v): v;
+            case Failure(_):
+              pos.error('Explicit type required, as it cannot be inferred from ${inferFrom.toString()}');
+          }
+        ).lazyComplex();
       else
         t;
 
@@ -31,12 +37,13 @@ class DirectInitialization {
       if (!member.isStatic)
         switch (member.kind) {
           case FVar(_, e) | FProp(_, _, _, e) if (e == null || isConst(e)):
-            if (e != null) member.addMeta(':isVar');
+            if (e != null && member.kind.match(FProp('get' | 'never', 'set' | 'never', _)))
+              member.addMeta(':isVar');
           case FVar(t, e):
-            member.kind = FVar(t = getType(t, e), null);
+            member.kind = FVar(t = getType(member.pos, t, e), null);
             DirectInitialization.member(ctx, member, t, e);
           case FProp(get, set, t, e):
-            member.kind = FProp(get, set, t = getType(t, e), null);
+            member.kind = FProp(get, set, t = getType(member.pos, t, e), null);
             DirectInitialization.member(ctx, member, t, e);
           default:
         }
