@@ -18,7 +18,7 @@ class TestInit extends Base {
     assertEquals('zab', d.baz);
 
     assertTrue(d.issue5[12]);
-    assertFalse(d.issue5[12]);
+    assertFalse(d.issue5[14]);
   }
 }
 
