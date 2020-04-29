@@ -9,8 +9,8 @@
 	"contributors": [
 		"back2dos"
 	],
-	"version": "0.6.2",
-	"releasenote": "Improve hxx integration for inline markup.",
+	"version": "0.6.3",
+	"releasenote": "Avoid diagnostic errors. Speed up a few transformations. Better inlining in @:forward.",
 	"tags": [
 		"tink",
 		"cross",
