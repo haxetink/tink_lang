@@ -32,7 +32,7 @@ class Sugar {
           function futurize(e:Expr)
             return (function ()
               return switch Context.followWithAbstracts(Context.typeof(e)) {
-                case TInst(_.get() => { pack: ['tink', 'core'], name: 'FutureObject' | 'FutureTrigger' }, _):
+                case TInst(_.get() => { module: 'tink.core.Future', name: 'FutureObject' | 'FutureTrigger' }, _):
                   e;
                 default:
                   macro @:pos(e.pos) tink.core.Future.sync($e);
