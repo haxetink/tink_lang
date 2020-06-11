@@ -9,8 +9,8 @@
 	"contributors": [
 		"back2dos"
 	],
-	"version": "0.6.3",
-	"releasenote": "Avoid diagnostic errors. Speed up a few transformations. Better inlining in @:forward.",
+	"version": "0.6.4",
+	"releasenote": "Fix for tink_core@2.",
 	"tags": [
 		"tink",
 		"cross",
