@@ -217,7 +217,7 @@ class Sugar {
                   var head = v.slice(0, i);
                   var tail = v.slice(i + 1);
 
-                  e = (macro {
+                  e = (macro @:pos(e.pos) {
                     head: _.slice(0, $v{head.length}),
                     rest: _.slice($v{head.length}, _.length - $v{tail.length}),
                     tail: _.slice(_.length - $v{tail.length}),
