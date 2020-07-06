@@ -29,39 +29,41 @@ class Notifiers {
       published: function (t) return mk('tink.core.Promise', t),
       internal: function (t) return mk('tink.core.Future.FutureTrigger', outcome(t)),
       init: function (pos, t) return ENew('tink.core.Future.FutureTrigger'.asTypePath([TPType(outcome(t))]), []).at(pos),
-      publish: function (e:Expr) return e 
+      publish: function (e:Expr) return e
     })
   ];
-  
+
   static public function apply(ctx:ClassBuilder) {
     for (type in types) {
       var make = type.b;
-      for (member in ctx)   
+      for (member in ctx)
         switch (member.extractMeta(type.a)) {
           case Success(tag):
             switch (member.kind) {
               case FVar(t, e):
                 if (t == null)
-                  t = if (e == null) 
+                  t = if (e == null)
                       macro : tink.core.Noise;
-                    else 
+                    else
                       e.pos.makeBlankType();
-                if (e == null) {  
+                if (e == null) {
                   var own = '_' + member.name;
                   ctx.addMember( {
                     name: own,
                     kind: FVar(make.internal(t), make.init(tag.pos, t)),
                     pos: tag.pos
-                  }, true).isPublic = false;  
+                  }, true).isPublic = false;
                   e = make.publish(own.resolve(tag.pos));
                 }
-                member.kind = FVar(make.published(t), e);
-                member.addMeta(':read');
+                var published = make.published(t);
+                member.kind = FProp('get', 'never', published);
+                member.publish();
+                ctx.addMember(Member.getter(member.name, member.pos, e, published));
               default:
                 member.pos.error('can only use @${type.a} on variables');
             }
           default:
         }
     }
-  }  
+  }
 }
