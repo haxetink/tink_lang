@@ -9,8 +9,8 @@
 	"contributors": [
 		"back2dos"
 	],
-	"version": "0.6.4",
-	"releasenote": "Fix for tink_core@2.",
+	"version": "0.7.0",
+	"releasenote": "Minor cleanup.",
 	"tags": [
 		"tink",
 		"cross",
