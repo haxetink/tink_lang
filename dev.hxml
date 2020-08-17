@@ -1,5 +1,6 @@
 -lib tink_lang
 -lib travix
+-lib tink_hxx
 tests.hxml
 -swf out.swf
 --no-output

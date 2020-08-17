@@ -233,45 +233,7 @@ class Sugar {
             e.map(fancyMatching);
         }
 
-    static function markupOnly(f:Function) {
-      var e = f.expr;
 
-      if (e == null) return f;
-
-      while (true) switch e.expr {
-        case EBlock([v]): e = v;
-        default: break;
-      }
-
-      if (e.expr.match(EConst(CString(_))))
-        e = macro @:pos(e.pos) @hxx $e;
-
-      var e2 = applyMarkup(e);
-
-      return
-        if (e == e2) f;
-        else { args: f.args, expr: macro @:pos(e2.pos) return $e2, ret: f.ret, params: f.params };
-    }
-
-    static function applyMarkup(e:Expr)
-      return switch e {
-        case macro @hxx $v:
-          macro @:pos(e.pos) hxx($v);
-        case macro @:markup $v:
-          v = {
-            expr: v.expr,
-            pos: {
-              var p = Context.getPosInfos(v.pos);
-              Context.makePosition({//this is awkward
-                file: p.file,
-                min: p.min - 1,
-                max: p.max + 1,
-              });
-            }
-          }
-          macro @:pos(e.pos) hxx($v);
-        default: e;
-      }
 
     static function use() {
 
@@ -302,11 +264,13 @@ class Sugar {
             p(a, function (c:ClassBuilder) return if (appliesTo(c)) { b(c); true; } else false);
 
         queue(SyntaxHub.classLevel, [
+          #if tink_hxx
           p('Hxx::functionBody', function (c) for (m in c) switch m.kind {
             case FFun(f):
-              m.kind = FFun(markupOnly(f));
+              m.kind = FFun(tink.hxx.Sugar.markupOnlyFunctions(f));
             default:
           }),
+          #end
           p('Notifiers', Notifiers.apply),
           p('PropertyNotation', PropertyNotation.apply),
           p('DirectInitialization', DirectInitialization.process),
@@ -345,11 +309,9 @@ class Sugar {
           });
 
         queue(SyntaxHub.exprLevel.inward, [
-          p('Hxx::apply', function (e:Expr) return switch e {
-            case { expr: EFunction(name, f)}:
-              EFunction(name, markupOnly(f)).at(e.pos);
-            default: applyMarkup(e);
-          }),
+          #if tink_hxx
+          p('Hxx::apply', tink.hxx.Sugar.transformExpr),
+          #end
           p('ShortLambdas::protectArrows', ShortLambdas.protectArrows),
           p('ShortLambdas::matchers', ShortLambdas.matchers),
           p('ExtendedLoops::comprehensions', ExtendedLoops.comprehensions),
